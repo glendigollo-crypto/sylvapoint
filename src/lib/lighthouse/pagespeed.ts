@@ -62,7 +62,7 @@ interface PSIResponse {
 
 const PSI_BASE_URL =
   'https://www.googleapis.com/pagespeedonline/v5/runPagespeed';
-const REQUEST_TIMEOUT_MS = 30_000;
+const REQUEST_TIMEOUT_MS = 60_000;
 
 /** Audit IDs we want to extract from the Lighthouse results. */
 const TRACKED_AUDITS = [
@@ -133,54 +133,67 @@ function buildUrl(targetUrl: string): string {
  * API failure rather than throwing.
  *
  * @param url - The page URL to analyse.
- * @returns PageSpeedResult with scores scaled to 0–100 and selected audits.
+ * @returns PageSpeedResult with scores scaled to 0–100 and selected audits, or null on failure.
  */
 export async function getPageSpeedScores(
   url: string,
-): Promise<PageSpeedResult> {
-  const fallback: PageSpeedResult = {
-    performance: 0,
-    accessibility: 0,
-    seo: 0,
-    bestPractices: 0,
-    audits: {},
-  };
+): Promise<PageSpeedResult | null> {
 
   try {
     const requestUrl = buildUrl(url);
+    const apiKey = process.env.GOOGLE_PAGESPEED_API_KEY;
+    console.log(`[pagespeed] Fetching scores for ${url} (key: ${apiKey ? 'yes' : 'no'}, timeout: ${REQUEST_TIMEOUT_MS}ms)`);
 
-    // Use AbortController for timeout.
-    const controller = new AbortController();
-    const timeoutId = setTimeout(
-      () => controller.abort(),
-      REQUEST_TIMEOUT_MS,
-    );
+    // Fetch with retry on 429
+    let data: PSIResponse | null = null;
+    const maxAttempts = apiKey ? 2 : 1; // Only retry if we have an API key
 
-    let response: Response;
-    try {
-      response = await fetch(requestUrl, {
-        method: 'GET',
-        signal: controller.signal,
-      });
-    } finally {
-      clearTimeout(timeoutId);
-    }
-
-    if (!response.ok) {
-      console.warn(
-        `[pagespeed] API returned status ${response.status} for ${url}`,
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(
+        () => controller.abort(),
+        REQUEST_TIMEOUT_MS,
       );
-      return fallback;
+
+      let response: Response;
+      try {
+        response = await fetch(requestUrl, {
+          method: 'GET',
+          signal: controller.signal,
+        });
+      } finally {
+        clearTimeout(timeoutId);
+      }
+
+      if (response.status === 429 && attempt < maxAttempts) {
+        console.warn(`[pagespeed] Rate limited (429), retrying in 5s... (attempt ${attempt}/${maxAttempts})`);
+        await new Promise(r => setTimeout(r, 5000));
+        continue;
+      }
+
+      if (!response.ok) {
+        const body = await response.text().catch(() => '');
+        console.warn(
+          `[pagespeed] API returned status ${response.status} for ${url}: ${body.slice(0, 200)}`,
+        );
+        return null;
+      }
+
+      data = (await response.json()) as PSIResponse;
+      break;
     }
 
-    const data = (await response.json()) as PSIResponse;
+    if (!data) {
+      console.warn(`[pagespeed] All attempts failed for ${url}`);
+      return null;
+    }
 
     // Handle API-level errors
     if (data.error) {
       console.warn(
         `[pagespeed] API error for ${url}: ${data.error.message ?? 'unknown'}`,
       );
-      return fallback;
+      return null;
     }
 
     const categories = data.lighthouseResult?.categories;
@@ -207,6 +220,8 @@ export async function getPageSpeedScores(
       }
     }
 
+    console.log(`[pagespeed] Scores for ${url}: perf=${performance}, a11y=${accessibility}, seo=${seo}, bp=${bestPractices}, audits=${Object.keys(audits).length}`);
+
     return {
       performance,
       accessibility,
@@ -224,6 +239,6 @@ export async function getPageSpeedScores(
         error instanceof Error ? error.message : error,
       );
     }
-    return fallback;
+    return null;
   }
 }

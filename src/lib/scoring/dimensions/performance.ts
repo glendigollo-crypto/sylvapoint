@@ -33,12 +33,11 @@ const THRESHOLDS: Record<string, ThresholdRange> = {
 };
 
 /**
- * Convert a Lighthouse 0-1 score to our 0-100 scale with contextual mapping.
- * Lighthouse scores below 0.5 are "poor", 0.5-0.89 are "needs improvement",
- * 0.9+ are "good".
+ * Clamp a 0-100 score to valid range.
+ * PageSpeed scores from pagespeed.ts are already converted to 0-100.
  */
-function lighthouseToScore(value: number): number {
-  return Math.round(Math.max(0, Math.min(100, value * 100)));
+function clampScore(value: number): number {
+  return Math.round(Math.max(0, Math.min(100, value)));
 }
 
 /**
@@ -86,7 +85,7 @@ export async function scorePerformance(
   const lcpScore = getAuditScore(pagespeed, 'largest-contentful-paint', pagespeed.performance);
   const fidScore = getAuditScore(pagespeed, 'total-blocking-time', pagespeed.performance);
   const clsScore = getAuditScore(pagespeed, 'cumulative-layout-shift', pagespeed.performance);
-  const overallScore = lighthouseToScore(pagespeed.performance);
+  const overallScore = clampScore(pagespeed.performance);
 
   const scoreMap: Record<string, number> = {
     lcp: lcpScore,
@@ -149,11 +148,11 @@ export async function scorePerformance(
     });
   }
 
-  if (pagespeed.accessibility < 0.9) {
+  if (pagespeed.accessibility < 90) {
     findings.push({
       title: 'Accessibility improvements needed',
-      severity: getSeverity(pagespeed.accessibility * 100),
-      evidence: `Lighthouse accessibility score: ${Math.round(pagespeed.accessibility * 100)}/100.`,
+      severity: getSeverity(pagespeed.accessibility),
+      evidence: `Lighthouse accessibility score: ${Math.round(pagespeed.accessibility)}/100.`,
       recommendation:
         'Review color contrast ratios, add alt text to images, ensure proper ARIA labels, and test with a screen reader.',
     });
@@ -247,7 +246,7 @@ function buildEvidenceText(
     case 'cls':
       return `Cumulative Layout Shift score: ${rounded}/100 (${status}). Target: 0.1 or lower.`;
     case 'overall_performance':
-      return `Lighthouse performance: ${rounded}/100 (${status}). Accessibility: ${Math.round(pagespeed.accessibility * 100)}/100, SEO: ${Math.round(pagespeed.seo * 100)}/100.`;
+      return `Lighthouse performance: ${rounded}/100 (${status}). Accessibility: ${Math.round(pagespeed.accessibility)}/100, SEO: ${Math.round(pagespeed.seo)}/100.`;
     default:
       return `Score: ${rounded}/100 (${status}).`;
   }
