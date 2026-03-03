@@ -239,7 +239,7 @@ export function AuditPresentation({
     <div>
       {isDesktop ? (
         /* ---- DESKTOP: Horizontal Carousel ---- */
-        <div ref={viewportRef} className="carousel-viewport">
+        <div ref={viewportRef} className="carousel-viewport mb-12">
           <div ref={trackRef} className="carousel-track">
             {sortedDimensions.map((dim, i) => (
               <DimensionSlide

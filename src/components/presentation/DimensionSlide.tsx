@@ -255,8 +255,10 @@ export function DimensionSlide({
   return (
     <div
       ref={slideRef}
-      className={`dimension-slide relative flex flex-col md:flex-row items-stretch gap-0 min-h-[85vh] ${
-        animationMode === "scroll" ? "scroll-snap-align-start" : "carousel-slide"
+      className={`dimension-slide relative flex flex-col md:flex-row items-stretch gap-0 ${
+        animationMode === "scroll"
+          ? "min-h-[85vh] scroll-snap-align-start"
+          : "carousel-slide h-full overflow-hidden"
       }`}
     >
       {/* Left panel — content (60%) */}
