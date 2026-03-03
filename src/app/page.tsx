@@ -15,16 +15,16 @@ export default function Home() {
               in 60 Seconds
             </h1>
             <p className="mt-6 mx-auto max-w-2xl text-lg text-sylva-200">
-              The first automated GTM readiness audit. Score your website across
-              6 dimensions based on frameworks from Dunford, Schwartz, Hormozi,
-              and more.
+              The first automated GTM readiness audit. Score your website
+              and social media presence across 6 dimensions based on frameworks
+              from Dunford, Schwartz, Hormozi, and more.
             </p>
             <div className="mt-10">
               <Link
                 href="/audit"
                 className="inline-flex items-center rounded-lg bg-amber-500 px-8 py-4 text-lg font-semibold text-sylva-950 transition-colors hover:bg-amber-400"
               >
-                Audit Your Website — Free
+                Audit Your GTM — Free
               </Link>
               <p className="mt-3 text-sm text-sylva-300">
                 No credit card. No email required. Results in 60 seconds.
@@ -41,28 +41,28 @@ export default function Home() {
             The GTM-6 Framework
           </h2>
           <p className="mt-4 text-center text-muted-foreground max-w-2xl mx-auto">
-            Your website scored across 6 critical go-to-market dimensions
+            Your website and social presence scored across 6 critical go-to-market dimensions
           </p>
           <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {[
               {
                 name: "Positioning & Messaging",
-                desc: "Is your market position clear? Does your messaging resonate with ideal buyers?",
+                desc: "Is your market position clear on your site and socials? Does your messaging resonate with ideal buyers across every channel?",
                 icon: "Target",
               },
               {
                 name: "Copy Effectiveness",
-                desc: "Do your headlines convert? Is your copy compelling, specific, and human-written?",
+                desc: "Do your headlines and social posts convert? Is your copy compelling, specific, and human-written — on-site and off?",
                 icon: "PenTool",
               },
               {
                 name: "SEO & Content Quality",
-                desc: "Can buyers find you? Is your content authoritative, deep, and E-E-A-T compliant?",
+                desc: "Can buyers find you on Google and social? Is your content authoritative, discoverable, and E-E-A-T compliant?",
                 icon: "Search",
               },
               {
                 name: "Lead Capture",
-                desc: "Are you capturing demand? Do you have lead magnets, forms, and bridge offers?",
+                desc: "Are you capturing demand from your site and social traffic? Lead magnets, CTAs, link-in-bio, and bridge offers?",
                 icon: "Magnet",
               },
               {
@@ -72,7 +72,7 @@ export default function Home() {
               },
               {
                 name: "Visual & Creative",
-                desc: "Do your visuals sell? Is your photography, video, and brand identity compelling?",
+                desc: "Do your visuals sell across web and social? Is your brand identity consistent, scroll-stopping, and professional?",
                 icon: "Eye",
               },
             ].map((dim) => (
@@ -112,13 +112,13 @@ export default function Home() {
             {[
               {
                 step: "1",
-                title: "Enter Your URL",
-                desc: "Paste your website URL and tell us your business type.",
+                title: "Enter Your Details",
+                desc: "Paste your website URL, add your social profiles, and tell us your business type.",
               },
               {
                 step: "2",
                 title: "AI Analysis",
-                desc: "We crawl your site and analyze it across 6 GTM dimensions.",
+                desc: "We crawl your site and social profiles, then analyze everything across 6 GTM dimensions.",
               },
               {
                 step: "3",
@@ -149,7 +149,8 @@ export default function Home() {
             Your GTM has gaps. Let&apos;s find them.
           </h2>
           <p className="mt-4 text-sylva-200">
-            Most websites leave 40-60% of their GTM potential on the table.
+            Most businesses leave 40-60% of their GTM potential on the table
+            — across their website and social channels.
             Find out where you stand in 60 seconds.
           </p>
           <Link

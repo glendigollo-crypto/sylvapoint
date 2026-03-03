@@ -8,7 +8,7 @@ export function Footer() {
           <div>
             <span className="text-lg font-bold text-sylva-900">SylvaPoint</span>
             <p className="mt-2 text-sm text-muted-foreground">
-              The first automated GTM readiness audit tool.
+              The first automated GTM readiness audit for your website and social media.
             </p>
           </div>
           <div>

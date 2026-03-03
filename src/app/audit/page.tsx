@@ -73,7 +73,7 @@ export default function AuditPage() {
             GTM Audit
           </h1>
           <p className="mt-2 text-muted-foreground">
-            Enter your website details to get your GTM scorecard
+            Enter your website and social media details to get your GTM scorecard
           </p>
         </div>
 
@@ -156,18 +156,18 @@ export default function AuditPage() {
               htmlFor="social_links"
               className="block text-sm font-medium text-sylva-900"
             >
-              Social Media Links{" "}
-              <span className="text-muted-foreground">(optional)</span>
+              Social Media Profiles{" "}
+              <span className="text-muted-foreground">(recommended)</span>
             </label>
             <input
               id="social_links"
               type="text"
-              placeholder="e.g., linkedin.com/company/acme, twitter.com/acme"
+              placeholder="e.g., linkedin.com/company/acme, twitter.com/acme, instagram.com/acme"
               className="mt-1 block w-full rounded-lg border border-border px-4 py-3 text-foreground placeholder:text-muted-foreground focus:border-sylva-500 focus:outline-none focus:ring-2 focus:ring-sylva-500/20"
               {...register("social_links")}
             />
             <p className="mt-1 text-xs text-muted-foreground">
-              Comma-separated. Helps us analyze your social presence.
+              Comma-separated. Add your LinkedIn, Twitter/X, Instagram, or TikTok profiles for a complete GTM audit.
             </p>
           </div>
 
