@@ -126,6 +126,7 @@ export async function scoreLeadCapture(
 
   const userPrompt = LEAD_CAPTURE_USER_PROMPT({
     businessType: business_type,
+    industry: input.industry,
     targetClients: target_clients,
     forms,
     ctas,

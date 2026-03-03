@@ -126,6 +126,7 @@ export async function scoreVisualCreative(
 
   const userPrompt = VISUAL_USER_PROMPT({
     businessType: business_type,
+    industry: input.industry,
     imageCount,
     videoCount,
     hasHeroImage,

@@ -35,10 +35,12 @@ interface DimensionCardProps {
   summaryGated?: string;
   findings?: Finding[];
   quickWins?: QuickWin[];
-  index?: number;
 }
 
-const ICONS: Record<string, React.ComponentType<{ className?: string; size?: number }>> = {
+const ICONS: Record<
+  string,
+  React.ComponentType<{ className?: string; size?: number }>
+> = {
   positioning: Target,
   copy: PenTool,
   seo: Search,
@@ -56,8 +58,10 @@ function getGradeColor(grade: string): string {
 }
 
 function severityColor(severity: string): string {
-  if (severity === "critical") return "bg-red-500/20 text-red-400 border-red-500/30";
-  if (severity === "warning") return "bg-orange-500/20 text-orange-400 border-orange-500/30";
+  if (severity === "critical")
+    return "bg-red-500/20 text-red-400 border-red-500/30";
+  if (severity === "warning")
+    return "bg-orange-500/20 text-orange-400 border-orange-500/30";
   return "bg-blue-500/20 text-blue-400 border-blue-500/30";
 }
 
@@ -82,22 +86,17 @@ export function DimensionCard({
   summaryGated,
   findings = [],
   quickWins = [],
-  index = 0,
 }: DimensionCardProps) {
   const [expanded, setExpanded] = useState(false);
   const gradeColor = getGradeColor(grade);
   const Icon = ICONS[dimension] ?? Target;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: index * 0.1 }}
-      layout
-      className="rounded-xl border border-sylva-700 bg-sylva-900 overflow-hidden"
+    <div
+      className="dimension-card rounded-xl border border-sylva-700 bg-sylva-900 overflow-hidden"
       style={{ borderLeftWidth: 3, borderLeftColor: gradeColor }}
     >
-      {/* Collapsed header — always visible */}
+      {/* Header — always visible */}
       <button
         onClick={() => setExpanded(!expanded)}
         className="flex w-full items-center gap-4 p-5 text-left"
@@ -114,7 +113,9 @@ export function DimensionCard({
         <div className="flex-1 min-w-0">
           <h3 className="text-sm font-semibold text-white truncate">{label}</h3>
           {summaryFree && (
-            <p className="mt-0.5 text-xs text-sylva-400 line-clamp-1">{summaryFree}</p>
+            <p className="mt-0.5 text-xs text-sylva-400 line-clamp-1">
+              {summaryFree}
+            </p>
           )}
         </div>
 
@@ -141,7 +142,7 @@ export function DimensionCard({
         </div>
       </button>
 
-      {/* Expanded content */}
+      {/* Expanded content — Framer Motion for height animation */}
       <AnimatePresence initial={false}>
         {expanded && (
           <motion.div
@@ -152,14 +153,12 @@ export function DimensionCard({
             className="overflow-hidden"
           >
             <div className="border-t border-sylva-700/50 px-5 pb-5 pt-4 space-y-5">
-              {/* Gated summary */}
               {summaryGated && (
                 <p className="text-sm text-sylva-300 leading-relaxed">
                   {summaryGated}
                 </p>
               )}
 
-              {/* Findings */}
               {findings.length > 0 && (
                 <div>
                   <h4 className="text-xs font-semibold uppercase tracking-wider text-sylva-400 mb-3">
@@ -193,7 +192,6 @@ export function DimensionCard({
                 </div>
               )}
 
-              {/* Quick Wins */}
               {quickWins.length > 0 && (
                 <div>
                   <h4 className="text-xs font-semibold uppercase tracking-wider text-sylva-400 mb-3">
@@ -205,7 +203,9 @@ export function DimensionCard({
                         key={i}
                         className="flex items-start gap-3 rounded-lg bg-sylva-800/50 p-3"
                       >
-                        <span className="mt-0.5 text-grade-a shrink-0">✓</span>
+                        <span className="mt-0.5 text-grade-a shrink-0">
+                          ✓
+                        </span>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm text-white font-medium">
                             {qw.title}
@@ -235,6 +235,6 @@ export function DimensionCard({
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </div>
   );
 }

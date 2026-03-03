@@ -154,6 +154,7 @@ export async function scoreSeoContent(
 
   const userPrompt = SEO_USER_PROMPT({
     businessType: business_type,
+    industry: input.industry,
     technicalSeoScore,
     bodyContent,
     headlineStructure,

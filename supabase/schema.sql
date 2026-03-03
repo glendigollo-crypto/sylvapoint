@@ -22,8 +22,11 @@ CREATE TYPE audit_status AS ENUM (
 
 CREATE TYPE business_type AS ENUM (
   'saas',
+  'ecommerce',
+  'marketplace',
   'services',
-  'info_product'
+  'info_product',
+  'enterprise'
 );
 
 CREATE TYPE payment_status AS ENUM (
@@ -118,6 +121,7 @@ CREATE TABLE audits (
   lead_id UUID REFERENCES leads(id),
   url TEXT NOT NULL,
   business_type business_type NOT NULL DEFAULT 'services',
+  industry TEXT,
   target_clients TEXT,
   social_links TEXT,
   status audit_status NOT NULL DEFAULT 'pending',
@@ -243,7 +247,28 @@ INSERT INTO weight_profiles (tenant_id, business_type, dimension_key, dimension_
   ('00000000-0000-0000-0000-000000000001', 'info_product', 'seo', 0.12, '{"technical_seo":0.25,"readability":0.20,"eeat_signals":0.20,"content_depth":0.20,"content_freshness":0.15}'),
   ('00000000-0000-0000-0000-000000000001', 'info_product', 'lead_capture', 0.18, '{"lead_magnet_existence":0.20,"offer_specificity":0.20,"form_friction":0.15,"bridge_to_paid":0.15,"social_proof_capture":0.15,"format_business_match":0.15}'),
   ('00000000-0000-0000-0000-000000000001', 'info_product', 'performance', 0.10, '{"performance_score":0.30,"mobile_readiness":0.25,"accessibility":0.25,"best_practices":0.20}'),
-  ('00000000-0000-0000-0000-000000000001', 'info_product', 'visual', 0.22, '{"product_photography":0.20,"video_presence":0.20,"platform_visual_compliance":0.20,"brand_consistency":0.20,"human_presence":0.20}');
+  ('00000000-0000-0000-0000-000000000001', 'info_product', 'visual', 0.22, '{"product_photography":0.20,"video_presence":0.20,"platform_visual_compliance":0.20,"brand_consistency":0.20,"human_presence":0.20}'),
+  -- E-Commerce
+  ('00000000-0000-0000-0000-000000000001', 'ecommerce', 'positioning', 0.12, '{"transformation_clarity":0.20,"differentiation":0.20,"value_translation":0.15,"target_specificity":0.15,"proof_arsenal":0.15,"mechanism_naming":0.15}'),
+  ('00000000-0000-0000-0000-000000000001', 'ecommerce', 'copy', 0.15, '{"headline_quality":0.20,"cta_effectiveness":0.15,"proof_specificity":0.15,"pain_articulation":0.15,"page_structure":0.15,"ai_tell_score":0.10,"objection_handling":0.10}'),
+  ('00000000-0000-0000-0000-000000000001', 'ecommerce', 'seo', 0.22, '{"technical_seo":0.25,"readability":0.20,"eeat_signals":0.20,"content_depth":0.20,"content_freshness":0.15}'),
+  ('00000000-0000-0000-0000-000000000001', 'ecommerce', 'lead_capture', 0.15, '{"lead_magnet_existence":0.20,"offer_specificity":0.20,"form_friction":0.15,"bridge_to_paid":0.15,"social_proof_capture":0.15,"format_business_match":0.15}'),
+  ('00000000-0000-0000-0000-000000000001', 'ecommerce', 'performance', 0.16, '{"performance_score":0.30,"mobile_readiness":0.25,"accessibility":0.25,"best_practices":0.20}'),
+  ('00000000-0000-0000-0000-000000000001', 'ecommerce', 'visual', 0.20, '{"product_photography":0.20,"video_presence":0.20,"platform_visual_compliance":0.20,"brand_consistency":0.20,"human_presence":0.20}'),
+  -- Marketplace
+  ('00000000-0000-0000-0000-000000000001', 'marketplace', 'positioning', 0.22, '{"transformation_clarity":0.20,"differentiation":0.20,"value_translation":0.15,"target_specificity":0.15,"proof_arsenal":0.15,"mechanism_naming":0.15}'),
+  ('00000000-0000-0000-0000-000000000001', 'marketplace', 'copy', 0.15, '{"headline_quality":0.20,"cta_effectiveness":0.15,"proof_specificity":0.15,"pain_articulation":0.15,"page_structure":0.15,"ai_tell_score":0.10,"objection_handling":0.10}'),
+  ('00000000-0000-0000-0000-000000000001', 'marketplace', 'seo', 0.13, '{"technical_seo":0.25,"readability":0.20,"eeat_signals":0.20,"content_depth":0.20,"content_freshness":0.15}'),
+  ('00000000-0000-0000-0000-000000000001', 'marketplace', 'lead_capture', 0.18, '{"lead_magnet_existence":0.20,"offer_specificity":0.20,"form_friction":0.15,"bridge_to_paid":0.15,"social_proof_capture":0.15,"format_business_match":0.15}'),
+  ('00000000-0000-0000-0000-000000000001', 'marketplace', 'performance', 0.12, '{"performance_score":0.30,"mobile_readiness":0.25,"accessibility":0.25,"best_practices":0.20}'),
+  ('00000000-0000-0000-0000-000000000001', 'marketplace', 'visual', 0.20, '{"product_photography":0.20,"video_presence":0.20,"platform_visual_compliance":0.20,"brand_consistency":0.20,"human_presence":0.20}'),
+  -- Enterprise
+  ('00000000-0000-0000-0000-000000000001', 'enterprise', 'positioning', 0.22, '{"transformation_clarity":0.20,"differentiation":0.20,"value_translation":0.15,"target_specificity":0.15,"proof_arsenal":0.15,"mechanism_naming":0.15}'),
+  ('00000000-0000-0000-0000-000000000001', 'enterprise', 'copy', 0.18, '{"headline_quality":0.20,"cta_effectiveness":0.15,"proof_specificity":0.15,"pain_articulation":0.15,"page_structure":0.15,"ai_tell_score":0.10,"objection_handling":0.10}'),
+  ('00000000-0000-0000-0000-000000000001', 'enterprise', 'seo', 0.10, '{"technical_seo":0.25,"readability":0.20,"eeat_signals":0.20,"content_depth":0.20,"content_freshness":0.15}'),
+  ('00000000-0000-0000-0000-000000000001', 'enterprise', 'lead_capture', 0.20, '{"lead_magnet_existence":0.20,"offer_specificity":0.20,"form_friction":0.15,"bridge_to_paid":0.15,"social_proof_capture":0.15,"format_business_match":0.15}'),
+  ('00000000-0000-0000-0000-000000000001', 'enterprise', 'performance', 0.10, '{"performance_score":0.30,"mobile_readiness":0.25,"accessibility":0.25,"best_practices":0.20}'),
+  ('00000000-0000-0000-0000-000000000001', 'enterprise', 'visual', 0.20, '{"product_photography":0.20,"video_presence":0.20,"platform_visual_compliance":0.20,"brand_consistency":0.20,"human_presence":0.20}');
 
 -- ==========================================
 -- 8. PAYMENTS

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useState, useRef } from "react";
+import { gsap, useGSAP } from "@/lib/gsap";
 import { ScoreGauge } from "@/components/scorecard/ScoreGauge";
 import { RadarChart } from "@/components/scorecard/RadarChart";
 import { DimensionCard } from "@/components/scorecard/DimensionCard";
@@ -75,16 +75,12 @@ function getGradeColorCSS(grade: string): string {
   return "var(--grade-f)";
 }
 
-const sectionVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" as const } },
-};
-
 export function AuditResults({ slug, initialData }: AuditResultsProps) {
   const [data, setData] = useState(initialData);
   const [isUnlocked, setIsUnlocked] = useState(
     data.tier === "gated" || data.tier === "paid"
   );
+  const mainRef = useRef<HTMLDivElement>(null);
 
   const score = Math.round(data.composite_score ?? 0);
   const grade = getGradeFromScore(score);
@@ -111,13 +107,9 @@ export function AuditResults({ slug, initialData }: AuditResultsProps) {
             </>
           ) : (
             <>
-              <motion.div
-                className="text-2xl text-amber-500 mb-4"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-              >
+              <div className="text-2xl text-amber-500 mb-4 animate-spin">
                 ⟳
-              </motion.div>
+              </div>
               <h2 className="text-xl font-semibold text-white mb-2">
                 Audit In Progress
               </h2>
@@ -159,13 +151,143 @@ export function AuditResults({ slug, initialData }: AuditResultsProps) {
   }));
 
   return (
-    <div className="min-h-screen bg-sylva-950">
-      {/* A. Header — glass-card earns it here as the one frosted element */}
-      <motion.header
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className="glass-card mx-4 mt-4 rounded-2xl"
+    <AuditResultsInner
+      slug={slug}
+      data={data}
+      score={score}
+      grade={grade}
+      gaps={gaps}
+      dimensions={dimensions}
+      radarDimensions={radarDimensions}
+      totalFindings={totalFindings}
+      isUnlocked={isUnlocked}
+      handleUnlock={handleUnlock}
+      mainRef={mainRef}
+    />
+  );
+}
+
+/* Separated into inner component so hooks always run (no early return before them) */
+function AuditResultsInner({
+  slug,
+  data,
+  score,
+  grade,
+  gaps,
+  dimensions,
+  radarDimensions,
+  totalFindings,
+  isUnlocked,
+  handleUnlock,
+  mainRef,
+}: {
+  slug: string;
+  data: AuditResultsProps["initialData"];
+  score: number;
+  grade: string;
+  gaps: NonNullable<AuditResultsProps["initialData"]["top_gaps"]>;
+  dimensions: NonNullable<AuditResultsProps["initialData"]["dimension_scores"]>;
+  radarDimensions: Array<{ label: string; score: number; grade: string }>;
+  totalFindings: number;
+  isUnlocked: boolean;
+  handleUnlock: () => Promise<void>;
+  mainRef: React.RefObject<HTMLDivElement | null>;
+}) {
+  // GSAP — static sections (header, score, radar, gaps, CTAs)
+  useGSAP(
+    () => {
+      // Header fade in
+      gsap.from(".gsap-header", {
+        opacity: 0,
+        y: -10,
+        duration: 0.5,
+        ease: "power2.out",
+      });
+
+      // Score verdict — delayed reveal after gauge animation
+      gsap.set(".score-verdict", { opacity: 0, y: 12 });
+      gsap.to(".score-verdict", {
+        opacity: 1,
+        y: 0,
+        duration: 0.5,
+        ease: "power2.out",
+        delay: 1.8,
+        scrollTrigger: {
+          trigger: ".score-verdict",
+          start: "top 85%",
+        },
+      });
+
+      // Section headings — clip-path wipe
+      gsap.utils.toArray<HTMLElement>(".gsap-clip").forEach((el) => {
+        gsap.from(el, {
+          clipPath: "inset(0 100% 0 0)",
+          duration: 0.6,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: el,
+            start: "top 80%",
+          },
+        });
+      });
+
+      // Gap cards — stagger from bottom
+      gsap.set(".gap-card", { opacity: 0, y: 30 });
+      gsap.to(".gap-card", {
+        opacity: 1,
+        y: 0,
+        duration: 0.5,
+        stagger: 0.12,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: ".gap-card",
+          start: "top 85%",
+        },
+      });
+
+      // CTA cards — stagger
+      gsap.set(".cta-card", { opacity: 0, y: 20 });
+      gsap.to(".cta-card", {
+        opacity: 1,
+        y: 0,
+        duration: 0.5,
+        stagger: 0.15,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: ".cta-card",
+          start: "top 85%",
+        },
+      });
+    },
+    { scope: mainRef }
+  );
+
+  // GSAP — dynamic section (dimension cards after unlock)
+  useGSAP(
+    () => {
+      if (!isUnlocked) return;
+
+      gsap.set(".dimension-card", { opacity: 0, y: 20 });
+      gsap.to(".dimension-card", {
+        opacity: 1,
+        y: 0,
+        duration: 0.4,
+        stagger: 0.08,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: ".dimension-card",
+          start: "top 90%",
+        },
+      });
+    },
+    { scope: mainRef, dependencies: [isUnlocked] }
+  );
+
+  return (
+    <div ref={mainRef} className="min-h-screen bg-sylva-950">
+      {/* A. Header */}
+      <header
+        className="gsap-header glass-card mx-4 mt-4 rounded-2xl"
         style={{ border: "none", borderBottom: "1px solid rgba(245,158,11,0.1)" }}
       >
         <div className="mx-auto max-w-5xl px-6 py-5">
@@ -180,26 +302,14 @@ export function AuditResults({ slug, initialData }: AuditResultsProps) {
             <span className="text-sylva-200 font-medium">{data.url}</span>
           </p>
         </div>
-      </motion.header>
+      </header>
 
       {/* B. Score Reveal */}
-      <motion.section
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.3 }}
-        variants={sectionVariants}
-        className="px-4 py-16"
-      >
+      <section className="px-4 py-16">
         <div className="mx-auto max-w-4xl text-center">
           <ScoreGauge score={score} grade={grade} size={260} />
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: 1, duration: 0.5 }}
-            className="mt-8 max-w-lg mx-auto"
-          >
+          <div className="score-verdict mt-8 max-w-lg mx-auto">
             <p className="text-lg text-sylva-300">
               Your GTM readiness is{" "}
               <span className="text-white font-bold font-score">{score}/100</span>{" "}
@@ -213,39 +323,27 @@ export function AuditResults({ slug, initialData }: AuditResultsProps) {
                 </span>
               </p>
             )}
-          </motion.div>
+          </div>
         </div>
-      </motion.section>
+      </section>
 
       {/* C. Radar Chart */}
       {radarDimensions.length === 6 && (
-        <motion.section
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
-          variants={sectionVariants}
-          className="px-4 pb-16"
-        >
+        <section className="px-4 pb-16">
           <div className="mx-auto max-w-3xl text-center">
-            <h2 className="text-xl font-bold text-white mb-8">
+            <h2 className="gsap-clip text-xl font-bold text-white mb-8">
               The GTM-6 Breakdown
             </h2>
             <RadarChart dimensions={radarDimensions} size={380} />
           </div>
-        </motion.section>
+        </section>
       )}
 
       {/* D. Priority Gaps */}
       {gaps.length > 0 && (
-        <motion.section
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
-          variants={sectionVariants}
-          className="px-4 pb-16"
-        >
+        <section className="px-4 pb-16">
           <div className="mx-auto max-w-4xl">
-            <h2 className="text-xl font-bold text-white mb-6">
+            <h2 className="gsap-clip text-xl font-bold text-white mb-6">
               Top {gaps.length} Priority Gaps
             </h2>
             <div className="grid gap-4 md:grid-cols-3">
@@ -257,12 +355,11 @@ export function AuditResults({ slug, initialData }: AuditResultsProps) {
                   score={gap.score}
                   grade={gap.grade}
                   quickWin={gap.quick_win}
-                  index={index}
                 />
               ))}
             </div>
           </div>
-        </motion.section>
+        </section>
       )}
 
       {/* E. Email Gate / Unlocked Content */}
@@ -275,13 +372,8 @@ export function AuditResults({ slug, initialData }: AuditResultsProps) {
               onUnlocked={handleUnlock}
             />
           ) : (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.4 }}
-              className="space-y-4"
-            >
-              {dimensions.map((dim, index) => (
+            <div className="space-y-4">
+              {dimensions.map((dim) => (
                 <DimensionCard
                   key={dim.dimension}
                   dimension={dim.dimension}
@@ -292,26 +384,19 @@ export function AuditResults({ slug, initialData }: AuditResultsProps) {
                   summaryGated={dim.summaryGated}
                   findings={dim.findings}
                   quickWins={dim.quickWins}
-                  index={index}
                 />
               ))}
-            </motion.div>
+            </div>
           )}
         </div>
       </section>
 
-      {/* F. CTAs — solid colors, no glow */}
-      <motion.section
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.3 }}
-        variants={sectionVariants}
-        className="px-4 pb-16"
-      >
+      {/* F. CTAs */}
+      <section className="px-4 pb-16">
         <div className="mx-auto max-w-3xl grid gap-4 md:grid-cols-2">
           <Link
             href={`/playbook/${slug}`}
-            className="block rounded-2xl bg-amber-500 p-6 text-center text-sylva-950 hover:bg-amber-400 transition-colors btn-lift"
+            className="cta-card block rounded-2xl bg-amber-500 p-6 text-center text-sylva-950 hover:bg-amber-400 transition-colors btn-lift"
           >
             <h3 className="text-lg font-bold">Get Your GTM Playbook</h3>
             <p className="mt-1 text-sm opacity-75">
@@ -323,7 +408,7 @@ export function AuditResults({ slug, initialData }: AuditResultsProps) {
           </Link>
           <Link
             href="/book"
-            className="block rounded-2xl border border-sylva-600 bg-sylva-900 p-6 text-center text-white hover:border-sylva-400 transition-colors btn-lift"
+            className="cta-card block rounded-2xl border border-sylva-600 bg-sylva-900 p-6 text-center text-white hover:border-sylva-400 transition-colors btn-lift"
           >
             <h3 className="text-lg font-bold">Book a Strategy Call</h3>
             <p className="mt-1 text-sm text-sylva-300">
@@ -334,7 +419,7 @@ export function AuditResults({ slug, initialData }: AuditResultsProps) {
             </span>
           </Link>
         </div>
-      </motion.section>
+      </section>
 
       {/* G. Footer */}
       <footer className="border-t border-sylva-800/50 py-8 px-4 text-center text-sm text-sylva-600">

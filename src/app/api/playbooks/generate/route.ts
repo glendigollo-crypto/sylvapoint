@@ -475,7 +475,7 @@ export async function POST(request: NextRequest) {
     const { data: audit, error: auditError } = await supabase
       .from("audits")
       .select(
-        "id, url, business_type, target_clients, composite_score, composite_grade, status"
+        "id, url, business_type, industry, target_clients, composite_score, composite_grade, status"
       )
       .eq("id", audit_id)
       .single();
@@ -556,6 +556,7 @@ export async function POST(request: NextRequest) {
         systemPrompt: PLAYBOOK_SYSTEM_PROMPT,
         userPrompt: PLAYBOOK_USER_PROMPT({
           businessType: audit.business_type,
+          industry: audit.industry ?? undefined,
           targetClients: audit.target_clients ?? "",
           url: audit.url,
           dimensions: dimContext,

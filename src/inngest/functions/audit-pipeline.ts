@@ -19,6 +19,7 @@ interface AuditStartEvent {
     audit_id: string;
     url: string;
     business_type: string;
+    industry: string;
     target_clients: string;
     social_links: string;
   };
@@ -62,7 +63,7 @@ export const auditPipeline = inngest.createFunction(
   },
   { event: 'audit/start' },
   async ({ event, step }) => {
-    const { audit_id, url, business_type, target_clients, social_links } =
+    const { audit_id, url, business_type, industry, target_clients, social_links } =
       event.data as AuditStartEvent['data'];
 
     // ---------------------------------------------------------------
@@ -184,6 +185,7 @@ export const auditPipeline = inngest.createFunction(
           audit_id,
           url,
           business_type: business_type as BusinessType,
+          industry: industry || undefined,
           target_clients,
           extraction,
           pagespeed: crawlData.pagespeed as PageSpeedResult | undefined,

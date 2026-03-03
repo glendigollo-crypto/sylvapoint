@@ -1,8 +1,7 @@
 "use client";
 
-import { useCountUp } from "@/hooks/useCountUp";
-import { useInView } from "@/hooks/useInView";
-import { motion } from "framer-motion";
+import { useRef } from "react";
+import { gsap, useGSAP } from "@/lib/gsap";
 
 interface ScoreGaugeProps {
   score: number;
@@ -19,12 +18,10 @@ function getGradeColor(grade: string): string {
 }
 
 export function ScoreGauge({ score, grade, size = 220 }: ScoreGaugeProps) {
-  const [ref, inView] = useInView<HTMLDivElement>({ threshold: 0.3 });
-  const animatedScore = useCountUp({
-    end: inView ? score : 0,
-    duration: 1500,
-    decimals: 0,
-  });
+  const containerRef = useRef<HTMLDivElement>(null);
+  const arcRef = useRef<SVGCircleElement>(null);
+  const numberRef = useRef<HTMLSpanElement>(null);
+  const gradeRef = useRef<HTMLSpanElement>(null);
 
   const strokeWidth = 10;
   const radius = (size - strokeWidth * 2) / 2;
@@ -32,9 +29,61 @@ export function ScoreGauge({ score, grade, size = 220 }: ScoreGaugeProps) {
   const center = size / 2;
   const gradeColor = getGradeColor(grade);
 
+  useGSAP(
+    () => {
+      if (!arcRef.current || !numberRef.current || !gradeRef.current) return;
+
+      // Initial state
+      gsap.set(gradeRef.current, { opacity: 0, y: 6 });
+
+      const counter = { val: 0 };
+
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: containerRef.current,
+          start: "top 80%",
+        },
+      });
+
+      // Stroke draws and number counts up simultaneously
+      tl.to(arcRef.current, {
+        strokeDashoffset: circumference - (circumference * score) / 100,
+        duration: 1.8,
+        ease: "power2.out",
+      })
+        .to(
+          counter,
+          {
+            val: score,
+            duration: 1.8,
+            ease: "power2.out",
+            onUpdate: () => {
+              if (numberRef.current) {
+                numberRef.current.textContent = Math.round(
+                  counter.val
+                ).toString();
+              }
+            },
+          },
+          0
+        ) // start at same time as stroke
+        .to(
+          gradeRef.current,
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.35,
+            ease: "power2.out",
+          },
+          "-=0.5"
+        );
+    },
+    { scope: containerRef }
+  );
+
   return (
     <div
-      ref={ref}
+      ref={containerRef}
       className="relative inline-flex items-center justify-center"
       style={{ width: size, height: size }}
       role="meter"
@@ -59,9 +108,9 @@ export function ScoreGauge({ score, grade, size = 220 }: ScoreGaugeProps) {
           strokeWidth={strokeWidth}
           opacity={0.5}
         />
-
-        {/* Score arc — solid color, no gradient */}
-        <motion.circle
+        {/* Score arc — starts fully hidden */}
+        <circle
+          ref={arcRef}
           cx={center}
           cy={center}
           r={radius}
@@ -70,28 +119,21 @@ export function ScoreGauge({ score, grade, size = 220 }: ScoreGaugeProps) {
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray={circumference}
-          initial={{ strokeDashoffset: circumference }}
-          animate={{
-            strokeDashoffset: inView
-              ? circumference - (circumference * score) / 100
-              : circumference,
-          }}
-          transition={{ duration: 1.5, ease: "easeOut" as const }}
+          strokeDashoffset={circumference}
         />
       </svg>
 
       {/* Center content */}
-      <motion.div
-        className="absolute inset-0 flex flex-col items-center justify-center"
-        initial={{ opacity: 0 }}
-        animate={inView ? { opacity: 1 } : { opacity: 0 }}
-        transition={{ duration: 0.5, delay: 0.4 }}
-      >
-        <span className="font-score text-5xl font-bold text-white leading-none">
-          {animatedScore}
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span
+          ref={numberRef}
+          className="font-score text-5xl font-bold text-white leading-none"
+        >
+          0
         </span>
         <span className="font-score text-sm text-sylva-500 mt-1">/100</span>
         <span
+          ref={gradeRef}
           className="mt-2 inline-flex items-center justify-center rounded-lg px-3 py-1 text-lg font-bold"
           style={{
             color: gradeColor,
@@ -101,7 +143,7 @@ export function ScoreGauge({ score, grade, size = 220 }: ScoreGaugeProps) {
         >
           {grade}
         </span>
-      </motion.div>
+      </div>
     </div>
   );
 }

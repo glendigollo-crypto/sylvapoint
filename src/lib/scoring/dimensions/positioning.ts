@@ -168,6 +168,7 @@ export async function scorePositioning(
 
   const userPrompt = POSITIONING_USER_PROMPT({
     businessType: business_type,
+    industry: input.industry,
     targetClients: target_clients,
     headlines,
     bodyContent,

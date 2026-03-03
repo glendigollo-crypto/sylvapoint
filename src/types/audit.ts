@@ -11,8 +11,30 @@ export type AuditStatus =
   | 'completed'
   | 'failed';
 
-/** The three supported business archetypes. */
-export type BusinessType = 'saas' | 'services' | 'info_product';
+/** The six supported business archetypes. */
+export type BusinessType =
+  | 'saas'
+  | 'ecommerce'
+  | 'marketplace'
+  | 'services'
+  | 'info_product'
+  | 'enterprise';
+
+/** Industry vertical for contextual scoring. */
+export type Industry =
+  | 'technology'
+  | 'fintech'
+  | 'healthcare'
+  | 'ecommerce_retail'
+  | 'education'
+  | 'real_estate'
+  | 'legal'
+  | 'marketing'
+  | 'hr_recruiting'
+  | 'manufacturing'
+  | 'nonprofit'
+  | 'media'
+  | 'other';
 
 /** Content tier the user has unlocked. */
 export type TierLevel = 'free' | 'gated' | 'paid';
@@ -27,6 +49,7 @@ export interface Audit {
   lead_id: string | null;
   url: string;
   business_type: BusinessType;
+  industry: string | null;
   target_clients: string | null;
   social_links: string | null;
   status: AuditStatus;
@@ -62,6 +85,7 @@ export interface TopGap {
 export interface AuditFormData {
   url: string;
   business_type: BusinessType;
+  industry?: string;
   target_clients: string;
   social_links?: string;
 }

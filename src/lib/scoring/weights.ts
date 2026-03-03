@@ -17,7 +17,7 @@ export interface DimensionWeightConfig {
 
 export type WeightProfileMap = Record<DimensionKey, DimensionWeightConfig>;
 
-type BusinessType = 'saas' | 'services' | 'info_product';
+type BusinessType = 'saas' | 'ecommerce' | 'marketplace' | 'services' | 'info_product' | 'enterprise';
 
 // ---------------------------------------------------------------------------
 // Hardcoded Defaults — match the GTM audit plan weight tables
@@ -103,6 +103,30 @@ const DEFAULT_WEIGHTS: Record<string, Record<DimensionKey, number>> = {
     lead_capture: 0.18,
     performance: 0.10,
     visual: 0.22,
+  },
+  ecommerce: {
+    positioning: 0.12,
+    copy: 0.15,
+    seo: 0.22,
+    lead_capture: 0.15,
+    performance: 0.16,
+    visual: 0.20,
+  },
+  marketplace: {
+    positioning: 0.22,
+    copy: 0.15,
+    seo: 0.13,
+    lead_capture: 0.18,
+    performance: 0.12,
+    visual: 0.20,
+  },
+  enterprise: {
+    positioning: 0.22,
+    copy: 0.18,
+    seo: 0.10,
+    lead_capture: 0.20,
+    performance: 0.10,
+    visual: 0.20,
   },
 };
 

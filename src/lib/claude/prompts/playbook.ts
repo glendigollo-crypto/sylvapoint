@@ -1,7 +1,9 @@
 // Playbook Generation prompt
 // Produces strategic GTM insights to enrich the paid playbook
 
-export const PLAYBOOK_SYSTEM_PROMPT = `You are a senior GTM strategist who has helped hundreds of SaaS companies, service businesses, and info-product creators refine their go-to-market presence.
+import { INDUSTRY_LABELS } from './industry-context';
+
+export const PLAYBOOK_SYSTEM_PROMPT = `You are a senior GTM strategist who has helped hundreds of SaaS companies, e-commerce brands, marketplace platforms, enterprise software firms, service businesses, and info-product creators refine their go-to-market presence.
 
 You produce three clearly labelled sections:
 
@@ -13,6 +15,7 @@ Write in a professional, direct tone. Use data from the audit scores and finding
 
 export const PLAYBOOK_USER_PROMPT = (context: {
   businessType: string;
+  industry?: string;
   targetClients: string;
   url: string;
   dimensions: {
@@ -40,10 +43,14 @@ Top Quick Wins: ${d.topQuickWins.length > 0 ? d.topQuickWins.join('; ') : 'None'
     )
     .join('\n\n');
 
-  return `Generate strategic insights for this ${context.businessType.replace('_', ' ')} business.
+  const industryLabel = context.industry && context.industry !== 'other'
+    ? INDUSTRY_LABELS[context.industry] ?? ''
+    : '';
+
+  return `Generate strategic insights for this ${context.businessType.replace('_', ' ')} business${industryLabel ? ` in the ${industryLabel} industry` : ''}.
 
 **URL:** ${context.url}
-**Target Clients:** ${context.targetClients}
+**Target Clients:** ${context.targetClients}${industryLabel ? `\n**Industry:** ${industryLabel}` : ''}
 **Overall Score:** ${context.compositeScore}/100 (${context.compositeGrade})
 
 ## Dimension Scores (sorted weakest-first)

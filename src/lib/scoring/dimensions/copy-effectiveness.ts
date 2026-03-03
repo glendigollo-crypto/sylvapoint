@@ -135,6 +135,7 @@ export async function scoreCopyEffectiveness(
 
   const userPrompt = COPY_USER_PROMPT({
     businessType: business_type,
+    industry: input.industry,
     targetClients: target_clients,
     headlines,
     ctas,

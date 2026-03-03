@@ -1,6 +1,8 @@
 // Phase 2: Positioning & Messaging scoring prompt
 // Encodes Dunford positioning, Schwartz sophistication, Hormozi value equation frameworks
 
+import { buildIndustryLine, getIndustryContext } from './industry-context';
+
 export const POSITIONING_SYSTEM_PROMPT = `You are an expert GTM analyst scoring a website's positioning and messaging.
 
 You evaluate based on these frameworks:
@@ -12,12 +14,17 @@ Score each sub-dimension 0-10 with specific evidence from the provided content.`
 
 export const POSITIONING_USER_PROMPT = (context: {
   businessType: string;
+  industry?: string;
   targetClients: string;
   headlines: string[];
   bodyContent: string;
   aboutContent: string;
   pricingContent: string;
-}) => `Analyze this ${context.businessType} company targeting "${context.targetClients}".
+}) => {
+  const industryLine = buildIndustryLine(context.industry);
+  const industryGuidance = getIndustryContext(context.industry, 'positioning');
+
+  return `Analyze this ${context.businessType} company${industryLine} targeting "${context.targetClients}".
 
 ## Homepage Headlines
 ${context.headlines.join("\n")}
@@ -30,7 +37,7 @@ ${context.aboutContent.slice(0, 2000)}
 
 ## Pricing Page
 ${context.pricingContent.slice(0, 2000)}
-
+${industryGuidance ? `\n## Industry-Specific Guidance\n${industryGuidance}\n` : ''}
 Score each sub-dimension 0-10 and provide evidence:
 
 1. **Transformation Clarity** (weight: 20%): How clearly do they articulate the before→after transformation?
@@ -59,3 +66,4 @@ Respond in JSON:
     { "title": "...", "description": "...", "impact": "high|medium|low", "effort": "quick|moderate|involved" }
   ]
 }`;
+};

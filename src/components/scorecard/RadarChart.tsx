@@ -1,7 +1,7 @@
 "use client";
 
-import { useInView } from "@/hooks/useInView";
-import { motion } from "framer-motion";
+import { useRef } from "react";
+import { gsap, useGSAP } from "@/lib/gsap";
 
 interface RadarDimension {
   label: string;
@@ -12,7 +12,6 @@ interface RadarDimension {
 interface RadarChartProps {
   dimensions: RadarDimension[];
   size?: number;
-  animated?: boolean;
 }
 
 function getGradeColor(grade: string): string {
@@ -29,34 +28,75 @@ function hexVertex(cx: number, cy: number, r: number, i: number) {
 }
 
 function hexPath(cx: number, cy: number, r: number): string {
-  return Array.from({ length: 6 }, (_, i) => {
-    const { x, y } = hexVertex(cx, cy, r, i);
-    return `${i === 0 ? "M" : "L"}${x},${y}`;
-  }).join(" ") + " Z";
+  return (
+    Array.from({ length: 6 }, (_, i) => {
+      const { x, y } = hexVertex(cx, cy, r, i);
+      return `${i === 0 ? "M" : "L"}${x},${y}`;
+    }).join(" ") + " Z"
+  );
 }
 
-export function RadarChart({ dimensions, size = 400, animated = true }: RadarChartProps) {
-  const [ref, inView] = useInView<HTMLDivElement>({ threshold: 0.2 });
+export function RadarChart({ dimensions, size = 400 }: RadarChartProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const polygonRef = useRef<SVGPathElement>(null);
 
   const cx = size / 2;
   const cy = size / 2;
   const maxR = size * 0.36;
   const gridLevels = [0.25, 0.5, 0.75, 1.0];
 
-  // Data polygon points based on scores
   const dataPoints = dimensions.map((dim, i) => {
     const r = (dim.score / 100) * maxR;
     return hexVertex(cx, cy, r, i);
   });
 
   const dataPath =
-    dataPoints.map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`).join(" ") + " Z";
+    dataPoints
+      .map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`)
+      .join(" ") + " Z";
 
-  // Label positions — pushed slightly beyond max radius
   const labelR = maxR + 30;
 
+  useGSAP(
+    () => {
+      if (!polygonRef.current) return;
+
+      // Polygon: scale from center
+      gsap.from(polygonRef.current, {
+        scale: 0,
+        opacity: 0,
+        duration: 1,
+        ease: "power2.out",
+        svgOrigin: `${cx} ${cy}`,
+        scrollTrigger: {
+          trigger: containerRef.current,
+          start: "top 75%",
+        },
+      });
+
+      // Dots: pop in with subtle overshoot
+      gsap.from(".radar-dot", {
+        scale: 0,
+        opacity: 0,
+        duration: 0.3,
+        stagger: 0.06,
+        ease: "back.out(1.5)",
+        delay: 0.5,
+        scrollTrigger: {
+          trigger: containerRef.current,
+          start: "top 75%",
+        },
+      });
+    },
+    { scope: containerRef }
+  );
+
   return (
-    <div ref={ref} className="flex justify-center" aria-label="GTM-6 radar chart">
+    <div
+      ref={containerRef}
+      className="flex justify-center"
+      aria-label="GTM-6 radar chart"
+    >
       <svg
         width={size}
         height={size}
@@ -66,7 +106,13 @@ export function RadarChart({ dimensions, size = 400, animated = true }: RadarCha
         aria-label="Hexagonal radar chart showing six GTM dimension scores"
       >
         <defs>
-          <linearGradient id="radar-fill-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <linearGradient
+            id="radar-fill-grad"
+            x1="0%"
+            y1="0%"
+            x2="100%"
+            y2="100%"
+          >
             <stop offset="0%" stopColor="rgba(245,158,11,0.25)" />
             <stop offset="100%" stopColor="rgba(245,158,11,0.08)" />
           </linearGradient>
@@ -102,54 +148,34 @@ export function RadarChart({ dimensions, size = 400, animated = true }: RadarCha
         })}
 
         {/* Data polygon */}
-        {animated ? (
-          <motion.path
-            d={dataPath}
-            fill="url(#radar-fill-grad)"
-            stroke="var(--amber-500)"
-            strokeWidth={2}
-            strokeLinejoin="round"
-            initial={{ opacity: 0, scale: 0.1 }}
-            animate={inView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.1 }}
-            transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
-            style={{ transformOrigin: `${cx}px ${cy}px` }}
-          />
-        ) : (
-          <path
-            d={dataPath}
-            fill="url(#radar-fill-grad)"
-            stroke="var(--amber-500)"
-            strokeWidth={2}
-            strokeLinejoin="round"
-          />
-        )}
+        <path
+          ref={polygonRef}
+          d={dataPath}
+          fill="url(#radar-fill-grad)"
+          stroke="var(--amber-500)"
+          strokeWidth={2}
+          strokeLinejoin="round"
+        />
 
-        {/* Data points (grade-colored dots) */}
+        {/* Data dots */}
         {dataPoints.map((p, i) => (
-          <motion.circle
+          <circle
             key={i}
+            className="radar-dot"
             cx={p.x}
             cy={p.y}
             r={5}
             fill={getGradeColor(dimensions[i].grade)}
             stroke="var(--sylva-950)"
             strokeWidth={2}
-            initial={animated ? { opacity: 0, scale: 0 } : undefined}
-            animate={
-              animated && inView
-                ? { opacity: 1, scale: 1 }
-                : animated
-                ? { opacity: 0, scale: 0 }
-                : undefined
-            }
-            transition={{ duration: 0.4, delay: 0.6 + i * 0.08 }}
           />
         ))}
 
         {/* Labels */}
         {dimensions.map((dim, i) => {
           const { x, y } = hexVertex(cx, cy, labelR, i);
-          const anchor = x < cx - 10 ? "end" : x > cx + 10 ? "start" : "middle";
+          const anchor =
+            x < cx - 10 ? "end" : x > cx + 10 ? "start" : "middle";
           return (
             <text
               key={i}

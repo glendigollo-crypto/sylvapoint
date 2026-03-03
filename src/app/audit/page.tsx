@@ -17,9 +17,11 @@ const auditSchema = z.object({
       return trimmed;
     })
     .pipe(z.string().url("Please enter a valid URL (e.g. example.com)")),
-  business_type: z.enum(["saas", "services", "info_product"], {
-    message: "Please select a business type",
-  }),
+  business_type: z.enum(
+    ["saas", "ecommerce", "marketplace", "services", "info_product", "enterprise"],
+    { message: "Please select a business type" },
+  ),
+  industry: z.string().max(50).optional().default(""),
   target_clients: z
     .string()
     .min(1, "Please describe your target clients"),
@@ -125,17 +127,60 @@ export default function AuditPage() {
               className="mt-1 block w-full rounded-lg border border-border px-4 py-3 text-foreground focus:border-sylva-500 focus:outline-none focus:ring-2 focus:ring-sylva-500/20"
               {...register("business_type")}
             >
-              <option value="saas">SaaS / Software</option>
-              <option value="services">Services / Agency / Consulting</option>
-              <option value="info_product">
-                Info Product / Course / Coaching
-              </option>
+              <optgroup label="Product-Led">
+                <option value="saas">SaaS / Software</option>
+                <option value="ecommerce">E-Commerce / D2C</option>
+                <option value="marketplace">Marketplace / Platform</option>
+              </optgroup>
+              <optgroup label="Sales & Service-Led">
+                <option value="enterprise">Enterprise Software</option>
+                <option value="services">Services / Agency / Consulting</option>
+              </optgroup>
+              <optgroup label="Content-Led">
+                <option value="info_product">
+                  Info Product / Course / Coaching
+                </option>
+              </optgroup>
             </select>
             {errors.business_type && (
               <p className="mt-1 text-sm text-grade-f">
                 {errors.business_type.message}
               </p>
             )}
+          </div>
+
+          {/* Industry */}
+          <div>
+            <label
+              htmlFor="industry"
+              className="block text-sm font-medium text-sylva-900"
+            >
+              Industry{" "}
+              <span className="text-muted-foreground">(recommended)</span>
+            </label>
+            <select
+              id="industry"
+              className="mt-1 block w-full rounded-lg border border-border px-4 py-3 text-foreground focus:border-sylva-500 focus:outline-none focus:ring-2 focus:ring-sylva-500/20"
+              {...register("industry")}
+            >
+              <option value="">Select your industry...</option>
+              <option value="technology">Technology / Software</option>
+              <option value="fintech">Fintech / Financial Services</option>
+              <option value="healthcare">Healthcare / Biotech</option>
+              <option value="ecommerce_retail">E-Commerce / Retail</option>
+              <option value="education">Education / EdTech</option>
+              <option value="real_estate">Real Estate / PropTech</option>
+              <option value="legal">Legal / Compliance</option>
+              <option value="marketing">Marketing / Agencies</option>
+              <option value="hr_recruiting">HR / Recruiting</option>
+              <option value="manufacturing">Manufacturing / Industrial</option>
+              <option value="nonprofit">Nonprofit / Social Impact</option>
+              <option value="media">Media / Entertainment</option>
+              <option value="other">Other</option>
+            </select>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Helps us tailor scoring to your sector&apos;s standards
+            </p>
           </div>
 
           {/* Target Clients */}

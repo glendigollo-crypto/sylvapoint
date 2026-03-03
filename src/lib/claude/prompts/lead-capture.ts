@@ -1,6 +1,8 @@
 // Phase 2: Lead Capture scoring prompt
 // Encodes 15 lead magnet formats, conversion psychology
 
+import { buildIndustryLine, getIndustryContext } from './industry-context';
+
 export const LEAD_CAPTURE_SYSTEM_PROMPT = `You are a conversion optimization expert scoring website lead capture systems.
 
 You evaluate based on:
@@ -13,13 +15,18 @@ Score each sub-dimension 0-10 with specific evidence.`;
 
 export const LEAD_CAPTURE_USER_PROMPT = (context: {
   businessType: string;
+  industry?: string;
   targetClients: string;
   forms: Array<{ fields: number; hasEmail: boolean; submitText: string }>;
   ctas: string[];
   hasLeadMagnet: boolean;
   testimonials: number;
   pricingExists: boolean;
-}) => `Analyze this ${context.businessType} company's lead capture targeting "${context.targetClients}".
+}) => {
+  const industryLine = buildIndustryLine(context.industry);
+  const industryGuidance = getIndustryContext(context.industry, 'lead_capture');
+
+  return `Analyze this ${context.businessType} company's${industryLine} lead capture targeting "${context.targetClients}".
 
 ## Forms Found
 ${context.forms.map((f, i) => `Form ${i + 1}: ${f.fields} fields, email: ${f.hasEmail}, submit: "${f.submitText}"`).join("\n") || "No forms found"}
@@ -31,7 +38,7 @@ ${context.ctas.join("\n") || "No CTAs found"}
 ## Testimonials Count: ${context.testimonials}
 ## Pricing Page Exists: ${context.pricingExists ? "Yes" : "No"}
 
-Score:
+${industryGuidance ? `## Industry-Specific Guidance\n${industryGuidance}\n\n` : ''}Score:
 1. **Lead Magnet Existence** (20%): Is there a clear lead magnet or free offer?
 2. **Offer Specificity** (20%): Is the lead magnet specific and valuable to the target audience?
 3. **Form Friction** (15%): How many fields? Is it easy to complete?
@@ -40,3 +47,4 @@ Score:
 6. **Format-Business Match** (15%): Does the lead magnet format match the business type?
 
 Respond in JSON with same structure as positioning prompt.`;
+};

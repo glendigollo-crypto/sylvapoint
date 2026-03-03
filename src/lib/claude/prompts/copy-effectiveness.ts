@@ -1,6 +1,8 @@
 // Phase 2: Copy Effectiveness scoring prompt
 // Encodes 12 headline formulas, AI-tell detection, direct response copy principles
 
+import { buildIndustryLine, getIndustryContext } from './industry-context';
+
 export const COPY_SYSTEM_PROMPT = `You are an expert copywriter and direct response analyst scoring website copy effectiveness.
 
 You evaluate based on:
@@ -14,13 +16,18 @@ Score each sub-dimension 0-10 with specific evidence.`;
 
 export const COPY_USER_PROMPT = (context: {
   businessType: string;
+  industry?: string;
   targetClients: string;
   headlines: string[];
   ctas: string[];
   bodyContent: string;
   aiTellScore: number;
   aiTellFlags: string[];
-}) => `Analyze this ${context.businessType} company's copy targeting "${context.targetClients}".
+}) => {
+  const industryLine = buildIndustryLine(context.industry);
+  const industryGuidance = getIndustryContext(context.industry, 'copy');
+
+  return `Analyze this ${context.businessType} company's${industryLine} copy targeting "${context.targetClients}".
 
 ## Headlines Found
 ${context.headlines.join("\n")}
@@ -35,7 +42,7 @@ ${context.bodyContent.slice(0, 3000)}
 Score: ${context.aiTellScore}/100
 Flags: ${context.aiTellFlags.join(", ") || "None"}
 
-Score each sub-dimension 0-10:
+${industryGuidance ? `## Industry-Specific Guidance\n${industryGuidance}\n\n` : ''}Score each sub-dimension 0-10:
 
 1. **Headline Quality** (20%): Do headlines follow proven formulas? Are they specific and compelling?
 2. **CTA Effectiveness** (15%): Are CTAs clear, action-oriented, benefit-driven?
@@ -46,3 +53,4 @@ Score each sub-dimension 0-10:
 7. **Objection Handling** (10%): Does the copy address and overcome likely objections?
 
 Respond in JSON with same structure as positioning prompt.`;
+};

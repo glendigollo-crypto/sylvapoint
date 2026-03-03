@@ -22,9 +22,11 @@ const auditRequestSchema = z.object({
       return trimmed;
     })
     .pipe(z.string().url('A valid URL is required')),
-  business_type: z.enum(['saas', 'services', 'info_product'], {
-    message: 'business_type must be one of: saas, services, info_product',
-  }),
+  business_type: z.enum(
+    ['saas', 'ecommerce', 'marketplace', 'services', 'info_product', 'enterprise'],
+    { message: 'business_type must be one of: saas, ecommerce, marketplace, services, info_product, enterprise' },
+  ),
+  industry: z.string().max(50).optional().default(''),
   target_clients: z
     .string()
     .min(1, 'target_clients is required')
@@ -72,7 +74,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { url, business_type, target_clients, social_links } = parsed.data;
+    const { url, business_type, industry, target_clients, social_links } = parsed.data;
 
     // --- Rate limiting -------------------------------------------------------
     const fingerprint = request.headers.get('x-fingerprint') ?? undefined;
@@ -99,6 +101,7 @@ export async function POST(request: NextRequest) {
         tenant_id: getTenantId(request),
         url,
         business_type,
+        industry: industry || null,
         target_clients,
         social_links,
         share_slug,
@@ -125,6 +128,7 @@ export async function POST(request: NextRequest) {
         audit_id: audit.id,
         url,
         business_type,
+        industry: industry ?? '',
         target_clients,
         social_links: social_links ?? '',
       },

@@ -21,8 +21,9 @@ export type {
 export interface ScorerInput {
   audit_id: string;
   url: string;
-  business_type: 'saas' | 'services' | 'info_product';
+  business_type: 'saas' | 'ecommerce' | 'marketplace' | 'services' | 'info_product' | 'enterprise';
   target_clients: string;
+  industry?: string;
   extraction: import('@/types/scoring').CrawlExtraction;
   pagespeed?: PageSpeedResult;
 }
