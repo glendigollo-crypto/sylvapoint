@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface ShareButtonProps {
   url: string;
@@ -23,13 +24,16 @@ export function ShareButton({ url, score, grade }: ShareButtonProps) {
   const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
   const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
 
+  const pillClass =
+    "rounded-full border border-sylva-700 px-4 py-2 text-xs font-medium text-sylva-300 hover:text-white hover:border-sylva-500 transition-colors";
+
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-2">
       <a
         href={twitterUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+        className={pillClass}
       >
         Share on X
       </a>
@@ -37,15 +41,33 @@ export function ShareButton({ url, score, grade }: ShareButtonProps) {
         href={linkedinUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+        className={pillClass}
       >
-        Share on LinkedIn
+        LinkedIn
       </a>
-      <button
-        onClick={handleCopy}
-        className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
-      >
-        {copied ? "Copied!" : "Copy Link"}
+      <button onClick={handleCopy} className={pillClass}>
+        <AnimatePresence mode="wait">
+          {copied ? (
+            <motion.span
+              key="copied"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="text-grade-a"
+            >
+              Copied!
+            </motion.span>
+          ) : (
+            <motion.span
+              key="copy"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              Copy Link
+            </motion.span>
+          )}
+        </AnimatePresence>
       </button>
     </div>
   );

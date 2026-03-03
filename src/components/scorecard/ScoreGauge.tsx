@@ -2,6 +2,7 @@
 
 import { useCountUp } from "@/hooks/useCountUp";
 import { useInView } from "@/hooks/useInView";
+import { motion } from "framer-motion";
 
 interface ScoreGaugeProps {
   score: number;
@@ -9,18 +10,26 @@ interface ScoreGaugeProps {
   size?: number;
 }
 
-export function ScoreGauge({ score, grade, size = 200 }: ScoreGaugeProps) {
+function getGradeColor(grade: string): string {
+  if (grade.startsWith("A")) return "var(--grade-a)";
+  if (grade.startsWith("B")) return "var(--grade-b)";
+  if (grade.startsWith("C")) return "var(--grade-c)";
+  if (grade.startsWith("D")) return "var(--grade-d)";
+  return "var(--grade-f)";
+}
+
+export function ScoreGauge({ score, grade, size = 220 }: ScoreGaugeProps) {
   const [ref, inView] = useInView<HTMLDivElement>({ threshold: 0.3 });
   const animatedScore = useCountUp({
     end: inView ? score : 0,
     duration: 1500,
-    decimals: 1,
+    decimals: 0,
   });
 
-  const radius = (size - 20) / 2;
+  const strokeWidth = 10;
+  const radius = (size - strokeWidth * 2) / 2;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (circumference * (inView ? score : 0)) / 100;
-
+  const center = size / 2;
   const gradeColor = getGradeColor(grade);
 
   return (
@@ -34,50 +43,65 @@ export function ScoreGauge({ score, grade, size = 200 }: ScoreGaugeProps) {
       aria-valuemax={100}
       aria-label={`GTM score: ${score} out of 100, grade ${grade}`}
     >
-      <svg width={size} height={size} className="-rotate-90" aria-hidden="true">
-        {/* Background circle */}
+      <svg
+        width={size}
+        height={size}
+        className="-rotate-90"
+        aria-hidden="true"
+      >
+        {/* Background track */}
         <circle
-          cx={size / 2}
-          cy={size / 2}
+          cx={center}
+          cy={center}
           r={radius}
           fill="none"
-          stroke="currentColor"
-          strokeWidth={10}
-          className="text-sylva-800"
+          stroke="var(--sylva-800)"
+          strokeWidth={strokeWidth}
+          opacity={0.5}
         />
-        {/* Score arc */}
-        <circle
-          cx={size / 2}
-          cy={size / 2}
+
+        {/* Score arc — solid color, no gradient */}
+        <motion.circle
+          cx={center}
+          cy={center}
           r={radius}
           fill="none"
           stroke={gradeColor}
-          strokeWidth={10}
+          strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray={circumference}
-          strokeDashoffset={strokeDashoffset}
-          className="transition-all duration-[1500ms] ease-out"
+          initial={{ strokeDashoffset: circumference }}
+          animate={{
+            strokeDashoffset: inView
+              ? circumference - (circumference * score) / 100
+              : circumference,
+          }}
+          transition={{ duration: 1.5, ease: "easeOut" as const }}
         />
       </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="font-score text-4xl font-bold text-white">
+
+      {/* Center content */}
+      <motion.div
+        className="absolute inset-0 flex flex-col items-center justify-center"
+        initial={{ opacity: 0 }}
+        animate={inView ? { opacity: 1 } : { opacity: 0 }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+      >
+        <span className="font-score text-5xl font-bold text-white leading-none">
           {animatedScore}
         </span>
+        <span className="font-score text-sm text-sylva-500 mt-1">/100</span>
         <span
-          className="mt-1 text-lg font-bold"
-          style={{ color: gradeColor }}
+          className="mt-2 inline-flex items-center justify-center rounded-lg px-3 py-1 text-lg font-bold"
+          style={{
+            color: gradeColor,
+            backgroundColor: `${gradeColor}12`,
+            border: `1.5px solid ${gradeColor}30`,
+          }}
         >
           {grade}
         </span>
-      </div>
+      </motion.div>
     </div>
   );
-}
-
-function getGradeColor(grade: string): string {
-  if (grade.startsWith("A")) return "var(--grade-a)";
-  if (grade.startsWith("B")) return "var(--grade-b)";
-  if (grade.startsWith("C")) return "var(--grade-c)";
-  if (grade.startsWith("D")) return "var(--grade-d)";
-  return "var(--grade-f)";
 }

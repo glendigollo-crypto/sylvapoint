@@ -1,9 +1,10 @@
 interface LetterGradeProps {
   grade: string;
   size?: "sm" | "md" | "lg";
+  glow?: boolean;
 }
 
-export function LetterGrade({ grade, size = "md" }: LetterGradeProps) {
+export function LetterGrade({ grade, size = "md", glow = false }: LetterGradeProps) {
   const gradeColor = getGradeColor(grade);
   const sizeClasses = {
     sm: "h-8 w-8 text-sm",
@@ -18,6 +19,7 @@ export function LetterGrade({ grade, size = "md" }: LetterGradeProps) {
         backgroundColor: `${gradeColor}15`,
         color: gradeColor,
         border: `2px solid ${gradeColor}40`,
+        boxShadow: glow ? `0 0 12px ${gradeColor}30` : undefined,
       }}
     >
       {grade}
