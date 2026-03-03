@@ -6,7 +6,8 @@
 // audit per fingerprint+IP combination within a 30-day window.
 // ---------------------------------------------------------------------------
 
-import { supabaseAdmin } from '@/lib/supabase/admin';
+import { getAdminSupabase } from '@/lib/supabase/admin';
+import { getTenantId } from '@/lib/tenant';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -106,30 +107,60 @@ export async function checkRateLimit(
 /**
  * Record that an audit was performed by this client.
  *
- * Should be called after an audit is successfully initiated.
+ * For each available identifier (fingerprint, ip, email), upserts a row
+ * in the rate_limits table: increments audit_count if it exists, otherwise
+ * inserts a new row.
  *
  * @param params - Client identifiers (fingerprint, IP, and/or email).
  */
 export async function recordAudit(params: RateLimitParams): Promise<void> {
   const { fingerprint, ip, email } = params;
+  const tenantId = getTenantId();
+  const supabase = getAdminSupabase();
+  const now = new Date().toISOString();
 
-  try {
-    const { error } = await supabaseAdmin.from('rate_limits').insert({
-      fingerprint: fingerprint ?? null,
-      ip: ip ?? null,
-      email: email ?? null,
-      created_at: new Date().toISOString(),
-    });
+  const identifiers: { value: string; type: 'fingerprint' | 'ip' | 'email' }[] = [];
+  if (fingerprint) identifiers.push({ value: fingerprint, type: 'fingerprint' });
+  if (ip) identifiers.push({ value: ip, type: 'ip' });
+  if (email) identifiers.push({ value: email, type: 'email' });
 
-    if (error) {
-      console.error('[rate-limit] Failed to record audit:', error.message);
+  for (const { value, type } of identifiers) {
+    try {
+      // Check if row exists
+      const { data: existing } = await supabase
+        .from('rate_limits')
+        .select('id, audit_count')
+        .eq('tenant_id', tenantId)
+        .eq('identifier', value)
+        .eq('identifier_type', type)
+        .single();
+
+      if (existing) {
+        // Increment existing count
+        await supabase
+          .from('rate_limits')
+          .update({
+            audit_count: existing.audit_count + 1,
+            last_audit_at: now,
+          })
+          .eq('id', existing.id);
+      } else {
+        // Insert new row
+        await supabase.from('rate_limits').insert({
+          tenant_id: tenantId,
+          identifier: value,
+          identifier_type: type,
+          audit_count: 1,
+          last_audit_at: now,
+        });
+      }
+    } catch (error) {
+      // Non-critical — log but don't throw
+      console.error(
+        `[rate-limit] Failed to record audit for ${type}:`,
+        error instanceof Error ? error.message : error,
+      );
     }
-  } catch (error) {
-    // Non-critical — log but don't throw
-    console.error(
-      '[rate-limit] Failed to record audit:',
-      error instanceof Error ? error.message : error,
-    );
   }
 }
 
@@ -138,11 +169,11 @@ export async function recordAudit(params: RateLimitParams): Promise<void> {
 // ---------------------------------------------------------------------------
 
 /**
- * Count how many audits this fingerprint+IP combination has initiated
- * within the TTL window.
+ * Get the maximum audit_count across all matching identifiers within the
+ * TTL window.
  *
- * Uses an OR query: matches if fingerprint matches OR ip matches, so
- * that switching one identifier doesn't reset the count.
+ * Runs separate queries per identifier to avoid unreliable PostgREST
+ * nested `and()` inside `.or()`.
  */
 async function getRecentAuditCount(
   fingerprint?: string,
@@ -152,27 +183,32 @@ async function getRecentAuditCount(
   cutoffDate.setDate(cutoffDate.getDate() - TTL_DAYS);
   const cutoff = cutoffDate.toISOString();
 
-  // Build query with OR conditions based on available identifiers
-  let query = supabaseAdmin
-    .from('rate_limits')
-    .select('id', { count: 'exact', head: true })
-    .gte('created_at', cutoff)
-    .is('email', null); // Only count anonymous audits
+  const tenantId = getTenantId();
+  const supabase = getAdminSupabase();
+  let maxCount = 0;
 
-  if (fingerprint && ip) {
-    // Match either fingerprint or IP
-    query = query.or(`fingerprint.eq.${fingerprint},ip.eq.${ip}`);
-  } else if (fingerprint) {
-    query = query.eq('fingerprint', fingerprint);
-  } else if (ip) {
-    query = query.eq('ip', ip);
+  const identifiers: { value: string; type: string }[] = [];
+  if (fingerprint) identifiers.push({ value: fingerprint, type: 'fingerprint' });
+  if (ip) identifiers.push({ value: ip, type: 'ip' });
+
+  for (const { value, type } of identifiers) {
+    try {
+      const { data, error } = await supabase
+        .from('rate_limits')
+        .select('audit_count')
+        .eq('tenant_id', tenantId)
+        .eq('identifier', value)
+        .eq('identifier_type', type)
+        .gte('last_audit_at', cutoff)
+        .single();
+
+      if (!error && data) {
+        maxCount = Math.max(maxCount, data.audit_count);
+      }
+    } catch {
+      // Individual query failure — skip this identifier
+    }
   }
 
-  const { count, error } = await query;
-
-  if (error) {
-    throw new Error(`Rate limit query failed: ${error.message}`);
-  }
-
-  return count ?? 0;
+  return maxCount;
 }

@@ -9,11 +9,14 @@ const auditSchema = z.object({
   url: z
     .string()
     .min(1, "URL is required")
-    .url("Please enter a valid URL")
-    .refine(
-      (url) => url.startsWith("http://") || url.startsWith("https://"),
-      "URL must start with http:// or https://"
-    ),
+    .transform((val) => {
+      const trimmed = val.trim();
+      if (trimmed && !/^https?:\/\//i.test(trimmed)) {
+        return `https://${trimmed}`;
+      }
+      return trimmed;
+    })
+    .pipe(z.string().url("Please enter a valid URL (e.g. example.com)")),
   business_type: z.enum(["saas", "services", "info_product"], {
     message: "Please select a business type",
   }),
@@ -89,13 +92,21 @@ export default function AuditPage() {
             >
               Website URL <span className="text-grade-f">*</span>
             </label>
-            <input
-              id="url"
-              type="url"
-              placeholder="https://example.com"
-              className="mt-1 block w-full rounded-lg border border-border px-4 py-3 text-foreground placeholder:text-muted-foreground focus:border-sylva-500 focus:outline-none focus:ring-2 focus:ring-sylva-500/20"
-              {...register("url")}
-            />
+            <div className="relative mt-1">
+              <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-muted-foreground text-sm select-none">
+                https://
+              </span>
+              <input
+                id="url"
+                type="text"
+                placeholder="yourwebsite.com"
+                className="block w-full rounded-lg border border-border pl-[4.5rem] pr-4 py-3 text-foreground placeholder:text-muted-foreground focus:border-sylva-500 focus:outline-none focus:ring-2 focus:ring-sylva-500/20"
+                {...register("url")}
+              />
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Enter your website address — e.g. <strong>yourcompany.com</strong>
+            </p>
             {errors.url && (
               <p className="mt-1 text-sm text-grade-f">{errors.url.message}</p>
             )}
@@ -136,13 +147,17 @@ export default function AuditPage() {
               Who are your target clients?{" "}
               <span className="text-grade-f">*</span>
             </label>
-            <input
+            <textarea
               id="target_clients"
-              type="text"
-              placeholder="e.g., B2B SaaS founders, small business owners, marketing managers"
-              className="mt-1 block w-full rounded-lg border border-border px-4 py-3 text-foreground placeholder:text-muted-foreground focus:border-sylva-500 focus:outline-none focus:ring-2 focus:ring-sylva-500/20"
+              rows={2}
+              placeholder={"e.g., Series A B2B SaaS founders looking to scale from $1M to $10M ARR"}
+              className="mt-1 block w-full rounded-lg border border-border px-4 py-3 text-foreground placeholder:text-muted-foreground focus:border-sylva-500 focus:outline-none focus:ring-2 focus:ring-sylva-500/20 resize-none"
               {...register("target_clients")}
             />
+            <p className="mt-1 text-xs text-muted-foreground">
+              Be specific — include role, company size, or industry.
+              The more detail, the more relevant your audit.
+            </p>
             {errors.target_clients && (
               <p className="mt-1 text-sm text-grade-f">
                 {errors.target_clients.message}
@@ -159,16 +174,26 @@ export default function AuditPage() {
               Social Media Profiles{" "}
               <span className="text-muted-foreground">(recommended)</span>
             </label>
-            <input
+            <textarea
               id="social_links"
-              type="text"
-              placeholder="e.g., linkedin.com/company/acme, twitter.com/acme, instagram.com/acme"
-              className="mt-1 block w-full rounded-lg border border-border px-4 py-3 text-foreground placeholder:text-muted-foreground focus:border-sylva-500 focus:outline-none focus:ring-2 focus:ring-sylva-500/20"
+              rows={3}
+              placeholder={"linkedin.com/company/acme\ntwitter.com/acme\ninstagram.com/acme"}
+              className="mt-1 block w-full rounded-lg border border-border px-4 py-3 text-foreground placeholder:text-muted-foreground focus:border-sylva-500 focus:outline-none focus:ring-2 focus:ring-sylva-500/20 resize-none font-mono text-sm"
               {...register("social_links")}
             />
             <p className="mt-1 text-xs text-muted-foreground">
-              Comma-separated. Add your LinkedIn, Twitter/X, Instagram, or TikTok profiles for a complete GTM audit.
+              One per line, or separated by commas. No need for https:// — we add it automatically.
             </p>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {["LinkedIn", "X / Twitter", "Instagram", "TikTok", "YouTube", "Facebook"].map((p) => (
+                <span
+                  key={p}
+                  className="inline-flex items-center rounded-full bg-sylva-50 px-2.5 py-0.5 text-xs text-sylva-600 border border-sylva-100"
+                >
+                  {p}
+                </span>
+              ))}
+            </div>
           </div>
 
           {error && (

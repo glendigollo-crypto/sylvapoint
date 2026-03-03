@@ -1,11 +1,14 @@
 import { inngest } from '@/inngest/client';
 import { getAdminSupabase } from '@/lib/supabase/admin';
 import { crawlWebsite } from '@/lib/crawl/firecrawl';
+import { nativeCrawl } from '@/lib/crawl/native';
 import { extractContent } from '@/lib/crawl/extractor';
 import { detectSocialLinks } from '@/lib/crawl/social';
 import { getPageSpeedScores } from '@/lib/lighthouse/pagespeed';
 import { runScoringEngine } from '@/lib/scoring/engine';
 import { getGrade } from '@/lib/scoring/grades';
+import { getWeightProfile } from '@/lib/scoring/weights';
+import { DEFAULT_TENANT_ID } from '@/lib/tenant';
 import type { CrawlExtraction } from '@/types/scoring';
 import type { PageSpeedResult } from '@/lib/scoring/types';
 import type { SocialData } from '@/lib/crawl/social';
@@ -84,16 +87,26 @@ export const auditPipeline = inngest.createFunction(
           Promise.resolve(null as SocialData | null), // Social detection runs on crawl results
         ]);
 
-      const crawl =
+      let crawl =
         firecrawlResult.status === 'fulfilled' ? firecrawlResult.value : null;
       const pagespeed =
         pagespeedResult.status === 'fulfilled' ? pagespeedResult.value : null;
-      // If ALL crawl sources failed, mark audit as failed with a clear message
-      if (
-        firecrawlResult.status === 'rejected' &&
-        pagespeedResult.status === 'rejected' &&
-        socialResult.status === 'rejected'
-      ) {
+
+      // Fallback to native fetch crawler if Firecrawl failed or returned no pages
+      if (!crawl || crawl.pages.length === 0) {
+        if (firecrawlResult.status === 'rejected') {
+          console.warn(
+            `[audit-pipeline] Firecrawl failed, falling back to native crawl: ${firecrawlResult.reason}`
+          );
+        }
+        try {
+          crawl = await nativeCrawl(url);
+        } catch (nativeErr) {
+          console.error('[audit-pipeline] Native crawl also failed:', nativeErr);
+        }
+      }
+
+      if (!crawl || crawl.pages.length === 0) {
         await updateAudit(audit_id, {
           status: 'failed',
           error_message:
@@ -104,17 +117,12 @@ export const auditPipeline = inngest.createFunction(
         );
       }
 
-      if (!crawl || crawl.pages.length === 0) {
-        throw new Error(
-          'Website crawl failed or returned no pages. The site may be blocking crawlers or unreachable.'
-        );
-      }
-
       // Detect social links from crawled HTML
       const social = detectSocialLinks(crawl.pages, social_links || undefined);
 
       // Store raw crawl data
       await getAdminSupabase().from('crawl_data').insert({
+        tenant_id: DEFAULT_TENANT_ID,
         audit_id: audit_id,
         firecrawl_raw: crawl,
         pagespeed_raw: pagespeed,
@@ -181,16 +189,23 @@ export const auditPipeline = inngest.createFunction(
           pagespeed: crawlData.pagespeed as PageSpeedResult | undefined,
         });
 
+        // Load weight profile for this business type
+        const weights = await getWeightProfile(business_type as BusinessType);
+
         // Store dimension scores in DB
         for (const dim of result.dimensions) {
+          const dimWeight = weights[dim.dimension]?.weight ?? 1;
+          const weightedScore = Math.round(dim.score * dimWeight * 100) / 100;
+
           const { data: dimRow } = await getAdminSupabase()
             .from('dimension_scores')
             .insert({
+              tenant_id: DEFAULT_TENANT_ID,
               audit_id,
               dimension_key: dim.dimension,
               label: dim.label,
               raw_score: dim.score,
-              weighted_score: dim.score, // Will be recalculated
+              weighted_score: weightedScore,
               grade: dim.grade,
               summary_free: dim.summaryFree,
               summary_gated: dim.summaryGated,
@@ -204,6 +219,7 @@ export const auditPipeline = inngest.createFunction(
           if (dimRow) {
             for (const sub of dim.subScores) {
               await getAdminSupabase().from('sub_scores').insert({
+                tenant_id: DEFAULT_TENANT_ID,
                 dimension_score_id: dimRow.id,
                 audit_id,
                 sub_score_key: sub.key,
@@ -298,6 +314,7 @@ export const auditPipeline = inngest.createFunction(
 
       // Track analytics event
       await getAdminSupabase().from('analytics_events').insert({
+        tenant_id: DEFAULT_TENANT_ID,
         event_type: 'audit_completed',
         audit_id,
         properties: {

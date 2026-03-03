@@ -3,13 +3,25 @@ import { z } from 'zod';
 import { nanoid } from 'nanoid';
 import { getAdminSupabase } from '@/lib/supabase/admin';
 import { inngest } from '@/inngest/client';
+import { getTenantId } from '@/lib/tenant';
+import { checkRateLimit, recordAudit } from '@/lib/rate-limit';
 
 // ---------------------------------------------------------------------------
 // Validation schema (zod v4)
 // ---------------------------------------------------------------------------
 
 const auditRequestSchema = z.object({
-  url: z.string().url('A valid URL is required'),
+  url: z
+    .string()
+    .min(1, 'URL is required')
+    .transform((val) => {
+      const trimmed = val.trim();
+      if (trimmed && !/^https?:\/\//i.test(trimmed)) {
+        return `https://${trimmed}`;
+      }
+      return trimmed;
+    })
+    .pipe(z.string().url('A valid URL is required')),
   business_type: z.enum(['saas', 'services', 'info_product'], {
     message: 'business_type must be one of: saas, services, info_product',
   }),
@@ -62,6 +74,21 @@ export async function POST(request: NextRequest) {
 
     const { url, business_type, target_clients, social_links } = parsed.data;
 
+    // --- Rate limiting -------------------------------------------------------
+    const fingerprint = request.headers.get('x-fingerprint') ?? undefined;
+    const ip =
+      request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+      request.headers.get('x-real-ip') ??
+      undefined;
+    const rateLimitResult = await checkRateLimit({ fingerprint, ip });
+
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: rateLimitResult.reason ?? 'Rate limit exceeded' },
+        { status: 429 }
+      );
+    }
+
     // --- Create the audit record --------------------------------------------
     const share_slug = generateShareSlug();
     const supabase = getAdminSupabase();
@@ -69,6 +96,7 @@ export async function POST(request: NextRequest) {
     const { data: audit, error: insertError } = await supabase
       .from('audits')
       .insert({
+        tenant_id: getTenantId(request),
         url,
         business_type,
         target_clients,
@@ -100,6 +128,11 @@ export async function POST(request: NextRequest) {
         target_clients,
         social_links: social_links ?? '',
       },
+    });
+
+    // --- Record audit for rate limiting (fire-and-forget) -------------------
+    recordAudit({ fingerprint, ip }).catch((err) => {
+      console.error('[audit/create] Failed to record rate limit:', err);
     });
 
     // --- Respond 202 Accepted -----------------------------------------------

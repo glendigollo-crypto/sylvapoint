@@ -7,6 +7,7 @@
 
 import axios, { type AxiosInstance } from 'axios';
 import { supabaseAdmin } from '@/lib/supabase/admin';
+import { DEFAULT_TENANT_ID } from '@/lib/tenant';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -266,7 +267,7 @@ export async function initiateSTKPush(
 
   // Record the pending payment
   const { data: paymentRow } = await supabaseAdmin.from('payments').insert({
-    tenant_id: '00000000-0000-0000-0000-000000000001',
+    tenant_id: DEFAULT_TENANT_ID,
     audit_id: params.auditId,
     lead_id: params.leadId,
     provider: 'mpesa',
@@ -279,7 +280,7 @@ export async function initiateSTKPush(
 
   // Log M-Pesa-specific metadata in analytics
   await supabaseAdmin.from('analytics_events').insert({
-    tenant_id: '00000000-0000-0000-0000-000000000001',
+    tenant_id: DEFAULT_TENANT_ID,
     event_type: 'mpesa_stk_push_initiated',
     audit_id: params.auditId,
     lead_id: params.leadId,
@@ -364,7 +365,7 @@ export async function handleCallback(body: unknown): Promise<void> {
 
     // Log M-Pesa callback details in analytics
     await supabaseAdmin.from('analytics_events').insert({
-      tenant_id: '00000000-0000-0000-0000-000000000001',
+      tenant_id: DEFAULT_TENANT_ID,
       event_type: 'mpesa_payment_completed',
       audit_id: payment.audit_id,
       lead_id: payment.lead_id,
@@ -390,7 +391,7 @@ export async function handleCallback(body: unknown): Promise<void> {
 
     // Log failure details in analytics
     await supabaseAdmin.from('analytics_events').insert({
-      tenant_id: '00000000-0000-0000-0000-000000000001',
+      tenant_id: DEFAULT_TENANT_ID,
       event_type: 'mpesa_payment_failed',
       audit_id: payment.audit_id,
       lead_id: payment.lead_id,

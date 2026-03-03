@@ -9,6 +9,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getAdminSupabase } from "@/lib/supabase/admin";
+import { getTenantId } from "@/lib/tenant";
+import { callClaude } from "@/lib/claude/client";
+import { PLAYBOOK_SYSTEM_PROMPT, PLAYBOOK_USER_PROMPT } from "@/lib/claude/prompts/playbook";
 import type { DimensionKey } from "@/types/scoring";
 
 // ---------------------------------------------------------------------------
@@ -523,7 +526,7 @@ export async function POST(request: NextRequest) {
     }
 
     // --- Generate playbook markdown ---
-    const markdown = generatePlaybookMarkdown(
+    const templateMarkdown = generatePlaybookMarkdown(
       {
         id: audit.id,
         url: audit.url,
@@ -535,14 +538,74 @@ export async function POST(request: NextRequest) {
       dimensions as DimensionScoreRow[]
     );
 
+    // --- Enrich with Claude strategic insights (non-fatal) ---
+    let finalMarkdown = templateMarkdown;
+    try {
+      const dimContext = (dimensions as DimensionScoreRow[]).map((d) => ({
+        key: d.dimension_key,
+        label: d.label || DIMENSION_LABELS[d.dimension_key] || d.dimension_key,
+        score: Math.round(d.raw_score),
+        grade: d.grade,
+        summaryGated: d.summary_gated,
+        topFindings: (d.findings ?? []).slice(0, 3).map((f) => f.title),
+        topQuickWins: (d.quick_wins ?? []).slice(0, 3).map((qw) => qw.title),
+      }));
+
+      const claudeResponse = await callClaude({
+        model: "claude-sonnet-4-5-20250514",
+        systemPrompt: PLAYBOOK_SYSTEM_PROMPT,
+        userPrompt: PLAYBOOK_USER_PROMPT({
+          businessType: audit.business_type,
+          targetClients: audit.target_clients ?? "",
+          url: audit.url,
+          dimensions: dimContext,
+          compositeScore: audit.composite_score ?? 0,
+          compositeGrade: audit.composite_grade ?? getGrade(audit.composite_score ?? 0),
+        }),
+        maxTokens: 3000,
+        temperature: 0.4,
+      });
+
+      // Inject strategic insights between the score summary and per-dimension sections
+      const insightsSection = [
+        "",
+        "## Strategic Insights",
+        "",
+        claudeResponse.content,
+        "",
+        "---",
+        "",
+      ].join("\n");
+
+      // Insert after the first "---" (end of score summary table)
+      const firstDividerIdx = finalMarkdown.indexOf("\n---\n");
+      if (firstDividerIdx !== -1) {
+        const afterDivider = firstDividerIdx + "\n---\n".length;
+        finalMarkdown =
+          finalMarkdown.slice(0, afterDivider) +
+          insightsSection +
+          finalMarkdown.slice(afterDivider);
+      } else {
+        // Fallback: prepend insights after the score summary heading
+        finalMarkdown = finalMarkdown + "\n" + insightsSection;
+      }
+    } catch (claudeError) {
+      console.error(
+        "[playbooks/generate] Claude enrichment failed, using template only:",
+        claudeError instanceof Error ? claudeError.message : claudeError
+      );
+      // finalMarkdown stays as templateMarkdown
+    }
+
     // --- Save to playbooks table ---
     const { data: playbook, error: insertError } = await supabase
       .from("playbooks")
       .insert({
+        tenant_id: getTenantId(request),
         audit_id,
         lead_id,
         payment_id,
-        content_markdown: markdown,
+        content_markdown: finalMarkdown,
         pdf_url: null,
         generated_at: new Date().toISOString(),
       })
@@ -559,6 +622,7 @@ export async function POST(request: NextRequest) {
 
     // --- Track analytics event ---
     await supabase.from("analytics_events").insert({
+      tenant_id: getTenantId(request),
       event_type: "playbook_generated",
       audit_id,
       properties: {

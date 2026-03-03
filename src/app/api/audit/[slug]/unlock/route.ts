@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getAdminSupabase } from '@/lib/supabase/admin';
 import { sendAuditReport, scheduleNurtureSequence } from '@/lib/email/resend';
+import { getTenantId } from '@/lib/tenant';
 
 // ---------------------------------------------------------------------------
 // Validation schema
@@ -121,6 +122,7 @@ export async function POST(
 
     // --- Track analytics event ----------------------------------------------
     await supabase.from('analytics_events').insert({
+      tenant_id: getTenantId(request),
       event_type: 'email_captured',
       audit_id: audit.id,
       lead_id: lead.id,

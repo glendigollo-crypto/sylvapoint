@@ -7,6 +7,7 @@
 
 import { Resend } from 'resend';
 import { getAdminSupabase } from '@/lib/supabase/admin';
+import { DEFAULT_TENANT_ID } from '@/lib/tenant';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -240,6 +241,7 @@ export async function scheduleNurtureSequence(
 
       // Track the scheduled email via analytics_events
       await getAdminSupabase().from('analytics_events').insert({
+        tenant_id: DEFAULT_TENANT_ID,
         event_type: 'nurture_email_scheduled',
         audit_id: auditId,
         lead_id: leadId,
@@ -260,6 +262,7 @@ export async function scheduleNurtureSequence(
 
   // Track nurture sequence start
   await getAdminSupabase().from('analytics_events').insert({
+    tenant_id: DEFAULT_TENANT_ID,
     event_type: 'nurture_sequence_started',
     audit_id: auditId,
     lead_id: leadId,

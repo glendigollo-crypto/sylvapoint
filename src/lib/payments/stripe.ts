@@ -7,6 +7,7 @@
 
 import Stripe from 'stripe';
 import { supabaseAdmin } from '@/lib/supabase/admin';
+import { DEFAULT_TENANT_ID } from '@/lib/tenant';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -235,7 +236,7 @@ async function handleCheckoutCompleted(
 
   // Record the payment
   const { error: paymentError } = await supabaseAdmin.from('payments').insert({
-    tenant_id: '00000000-0000-0000-0000-000000000001',
+    tenant_id: DEFAULT_TENANT_ID,
     audit_id: auditId,
     lead_id: leadId ?? null,
     provider: 'stripe',
@@ -269,7 +270,7 @@ async function handlePaymentFailed(
   // Record the failure
   if (auditId) {
     await supabaseAdmin.from('payments').insert({
-      tenant_id: '00000000-0000-0000-0000-000000000001',
+      tenant_id: DEFAULT_TENANT_ID,
       audit_id: auditId,
       lead_id: paymentIntent.metadata?.lead_id ?? null,
       provider: 'stripe',
@@ -282,7 +283,7 @@ async function handlePaymentFailed(
 
     // Log error details in analytics
     await supabaseAdmin.from('analytics_events').insert({
-      tenant_id: '00000000-0000-0000-0000-000000000001',
+      tenant_id: DEFAULT_TENANT_ID,
       event_type: 'payment_failed',
       audit_id: auditId,
       lead_id: paymentIntent.metadata?.lead_id ?? null,

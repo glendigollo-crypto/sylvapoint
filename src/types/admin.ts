@@ -10,12 +10,15 @@ import type { AuditStatus, BusinessType, TierLevel } from './audit';
 
 export interface AdminUser {
   id: string;
+  tenant_id: string;
   email: string;
-  name: string;
-  role: 'owner' | 'admin' | 'viewer';
-  avatar_url: string | null;
-  created_at: string;
+  password_hash: string;
+  role: 'super_admin' | 'admin' | 'viewer';
   last_login_at: string | null;
+  failed_attempts: number;
+  locked_until: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 // ---------------------------------------------------------------------------
