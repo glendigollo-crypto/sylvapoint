@@ -136,7 +136,7 @@ export async function scoreLeadCapture(
       model: 'claude-haiku-4-5-20251001',
       systemPrompt: LEAD_CAPTURE_SYSTEM_PROMPT,
       userPrompt,
-      maxTokens: 2048,
+      maxTokens: 4096,
       temperature: 0.3,
     });
   } catch (err) {

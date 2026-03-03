@@ -175,7 +175,7 @@ export async function scorePositioning(
       model: 'claude-sonnet-4-6',
       systemPrompt: POSITIONING_SYSTEM_PROMPT,
       userPrompt,
-      maxTokens: 2048,
+      maxTokens: 4096,
       temperature: 0.3,
     });
   } catch (err) {

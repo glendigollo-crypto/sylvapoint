@@ -52,5 +52,24 @@ ${industryGuidance ? `## Industry-Specific Guidance\n${industryGuidance}\n\n` : 
 6. **AI-Tell Score** (10%): Use the provided AI-tell scanner score.
 7. **Objection Handling** (10%): Does the copy address and overcome likely objections?
 
-Respond in JSON with same structure as positioning prompt.`;
+Respond in this exact JSON format:
+{
+  "sub_scores": [
+    { "key": "headline_quality", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] },
+    { "key": "cta_effectiveness", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] },
+    { "key": "proof_specificity", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] },
+    { "key": "pain_articulation", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] },
+    { "key": "page_structure", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] },
+    { "key": "ai_tell_score", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] },
+    { "key": "objection_handling", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] }
+  ],
+  "summary_free": "One-sentence assessment",
+  "summary_gated": "Detailed 3-5 sentence analysis",
+  "findings": [
+    { "title": "...", "severity": "critical|warning|info", "evidence": "...", "recommendation": "...", "playbook_chapter": "Chapter 2: Copy" }
+  ],
+  "quick_wins": [
+    { "title": "...", "description": "...", "impact": "high|medium|low", "effort": "quick|moderate|involved" }
+  ]
+}`;
 };

@@ -46,5 +46,23 @@ ${industryGuidance ? `## Industry-Specific Guidance\n${industryGuidance}\n\n` : 
 5. **Social Proof at Capture** (15%): Are testimonials/proof near capture points?
 6. **Format-Business Match** (15%): Does the lead magnet format match the business type?
 
-Respond in JSON with same structure as positioning prompt.`;
+Respond in this exact JSON format:
+{
+  "sub_scores": [
+    { "key": "lead_magnet_existence", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] },
+    { "key": "offer_specificity", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] },
+    { "key": "form_friction", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] },
+    { "key": "bridge_to_paid", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] },
+    { "key": "social_proof_at_capture", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] },
+    { "key": "format_business_match", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] }
+  ],
+  "summary_free": "One-sentence assessment",
+  "summary_gated": "Detailed 3-5 sentence analysis",
+  "findings": [
+    { "title": "...", "severity": "critical|warning|info", "evidence": "...", "recommendation": "...", "playbook_chapter": "Chapter 4: Lead Capture" }
+  ],
+  "quick_wins": [
+    { "title": "...", "description": "...", "impact": "high|medium|low", "effort": "quick|moderate|involved" }
+  ]
+}`;
 };

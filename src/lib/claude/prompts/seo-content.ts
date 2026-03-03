@@ -51,5 +51,22 @@ ${industryGuidance ? `## Industry-Specific Guidance\n${industryGuidance}\n\n` : 
 4. **Content Depth** (20%): Is content comprehensive? Does it answer likely questions?
 5. **Content Freshness** (15%): Are there date indicators? Recent content? Updated information?
 
-Respond in JSON with same structure as positioning prompt.`;
+Respond in this exact JSON format:
+{
+  "sub_scores": [
+    { "key": "technical_seo", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] },
+    { "key": "readability", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] },
+    { "key": "eeat_signals", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] },
+    { "key": "content_depth", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] },
+    { "key": "content_freshness", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] }
+  ],
+  "summary_free": "One-sentence assessment",
+  "summary_gated": "Detailed 3-5 sentence analysis",
+  "findings": [
+    { "title": "...", "severity": "critical|warning|info", "evidence": "...", "recommendation": "...", "playbook_chapter": "Chapter 3: SEO" }
+  ],
+  "quick_wins": [
+    { "title": "...", "description": "...", "impact": "high|medium|low", "effort": "quick|moderate|involved" }
+  ]
+}`;
 };

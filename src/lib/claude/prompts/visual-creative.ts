@@ -49,5 +49,22 @@ ${industryGuidance ? `## Industry-Specific Guidance\n${industryGuidance}\n\n` : 
 4. **Brand Visual Consistency** (20%): Consistent color scheme, typography, imagery style?
 5. **Human Presence & Authenticity** (20%): Real people? Team photos? Customer faces?
 
-Respond in JSON with same structure as positioning prompt.`;
+Respond in this exact JSON format:
+{
+  "sub_scores": [
+    { "key": "product_photography", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] },
+    { "key": "video_content", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] },
+    { "key": "platform_compliance", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] },
+    { "key": "brand_consistency", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] },
+    { "key": "human_presence", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] }
+  ],
+  "summary_free": "One-sentence assessment",
+  "summary_gated": "Detailed 3-5 sentence analysis",
+  "findings": [
+    { "title": "...", "severity": "critical|warning|info", "evidence": "...", "recommendation": "...", "playbook_chapter": "Chapter 6: Visual" }
+  ],
+  "quick_wins": [
+    { "title": "...", "description": "...", "impact": "high|medium|low", "effort": "quick|moderate|involved" }
+  ]
+}`;
 };

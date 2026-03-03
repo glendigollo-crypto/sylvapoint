@@ -164,7 +164,7 @@ export async function scoreSeoContent(
       model: 'claude-haiku-4-5-20251001',
       systemPrompt: SEO_SYSTEM_PROMPT,
       userPrompt,
-      maxTokens: 2048,
+      maxTokens: 4096,
       temperature: 0.3,
     });
   } catch (err) {
