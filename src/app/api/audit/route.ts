@@ -22,6 +22,7 @@ const auditRequestSchema = z.object({
       return trimmed;
     })
     .pipe(z.string().url('A valid URL is required')),
+  email: z.string().email('A valid email is required').optional(),
   business_type: z.enum(
     ['saas', 'ecommerce', 'marketplace', 'services', 'info_product', 'enterprise'],
     { message: 'business_type must be one of: saas, ecommerce, marketplace, services, info_product, enterprise' },
@@ -74,7 +75,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { url, business_type, industry, target_clients, social_links } = parsed.data;
+    const { url, email, business_type, industry, target_clients, social_links } = parsed.data;
 
     // --- Rate limiting -------------------------------------------------------
     const fingerprint = request.headers.get('x-fingerprint') ?? undefined;
@@ -82,7 +83,7 @@ export async function POST(request: NextRequest) {
       request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
       request.headers.get('x-real-ip') ??
       undefined;
-    const rateLimitResult = await checkRateLimit({ fingerprint, ip });
+    const rateLimitResult = await checkRateLimit({ fingerprint, ip, email });
 
     if (!rateLimitResult.allowed) {
       return NextResponse.json(
@@ -135,7 +136,7 @@ export async function POST(request: NextRequest) {
     });
 
     // --- Record audit for rate limiting (fire-and-forget) -------------------
-    recordAudit({ fingerprint, ip }).catch((err) => {
+    recordAudit({ fingerprint, ip, email }).catch((err) => {
       console.error('[audit/create] Failed to record rate limit:', err);
     });
 
