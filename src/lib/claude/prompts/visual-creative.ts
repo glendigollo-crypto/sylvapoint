@@ -1,18 +1,9 @@
 // Phase 2: Visual & Creative scoring prompt
-// Encodes VISUAL_INTELLIGENCE.md rubric
+// Slim "scorecard" version — scores + brief summary only.
 
 import { buildIndustryLine, getIndustryContext } from './industry-context';
 
-export const VISUAL_SYSTEM_PROMPT = `You are a visual design and creative strategist scoring website visual quality and brand identity.
-
-You evaluate based on:
-- Product photography quality and professionalism
-- Video content presence and integration
-- Platform visual compliance (responsive, proper sizing)
-- Brand visual consistency (colors, typography, imagery style)
-- Human presence and authenticity (real people vs stock)
-
-Score each sub-dimension 0-10 with specific evidence from the provided content analysis.`;
+export const VISUAL_SYSTEM_PROMPT = `You are a visual design strategist. Score website visual quality quickly and accurately. Be concise.`;
 
 export const VISUAL_USER_PROMPT = (context: {
   businessType: string;
@@ -28,43 +19,32 @@ export const VISUAL_USER_PROMPT = (context: {
   const industryLine = buildIndustryLine(context.industry);
   const industryGuidance = getIndustryContext(context.industry, 'visual');
 
-  return `Analyze this ${context.businessType} company's${industryLine} visual and creative presence.
+  return `Score this ${context.businessType} company's${industryLine} visual presence.
 
-## Image Analysis
-- Total images: ${context.imageCount}
-- Hero image present: ${context.hasHeroImage ? "Yes" : "No"}
-- Images with alt text: ${context.imagesWithAlt}/${context.totalImages}
+## Images: ${context.imageCount} total, hero: ${context.hasHeroImage ? "Yes" : "No"}, alt text: ${context.imagesWithAlt}/${context.totalImages}
+## Videos: ${context.videoCount} (sources: ${context.videoSources.join(", ") || "none"})
 
-## Video Analysis
-- Videos found: ${context.videoCount}
-- Sources: ${context.videoSources.join(", ") || "None"}
+## Content Context (excerpt)
+${context.bodyContent.slice(0, 1000)}
 
-## Page Content Context (first 2000 chars)
-${context.bodyContent.slice(0, 2000)}
+${industryGuidance ? `## Industry Notes\n${industryGuidance}\n\n` : ''}Score 0-10 each:
+1. product_photography_quality (20%) — professional, custom vs stock
+2. video_content_presence (20%) — demo, testimonial, explainer
+3. platform_visual_compliance (20%) — responsive, proper sizing
+4. brand_visual_consistency (20%) — consistent colors, typography
+5. human_presence_authenticity (20%) — real people vs stock
 
-${industryGuidance ? `## Industry-Specific Guidance\n${industryGuidance}\n\n` : ''}Score:
-1. **Product Photography Quality** (20%): Professional images? Custom vs stock?
-2. **Video Content Presence** (20%): Any video? Demo, testimonial, explainer?
-3. **Platform Visual Compliance** (20%): Responsive images? Proper sizing? Fast loading?
-4. **Brand Visual Consistency** (20%): Consistent color scheme, typography, imagery style?
-5. **Human Presence & Authenticity** (20%): Real people? Team photos? Customer faces?
-
-Respond in this exact JSON format:
+Respond in JSON:
 {
   "sub_scores": [
-    { "key": "product_photography", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] },
-    { "key": "video_content", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] },
-    { "key": "platform_compliance", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] },
-    { "key": "brand_consistency", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] },
-    { "key": "human_presence", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] }
+    { "key": "product_photography_quality", "score": 7, "evidence": "brief reason" },
+    { "key": "video_content_presence", "score": 5, "evidence": "brief reason" },
+    { "key": "platform_visual_compliance", "score": 8, "evidence": "brief reason" },
+    { "key": "brand_visual_consistency", "score": 7, "evidence": "brief reason" },
+    { "key": "human_presence_authenticity", "score": 6, "evidence": "brief reason" }
   ],
-  "summary_free": "One-sentence assessment",
-  "summary_gated": "Detailed 3-5 sentence analysis",
-  "findings": [
-    { "title": "...", "severity": "critical|warning|info", "evidence": "...", "recommendation": "...", "playbook_chapter": "Chapter 6: Visual" }
-  ],
-  "quick_wins": [
-    { "title": "...", "description": "...", "impact": "high|medium|low", "effort": "quick|moderate|involved" }
-  ]
+  "summary_free": "One sentence overall assessment.",
+  "findings": [{ "title": "...", "severity": "critical|warning|info", "evidence": "...", "recommendation": "..." }],
+  "quick_wins": [{ "title": "...", "description": "...", "impact": "high|medium|low", "effort": "quick|moderate|involved" }]
 }`;
 };

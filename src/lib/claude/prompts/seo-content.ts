@@ -1,18 +1,9 @@
 // Phase 2: SEO & Content Quality scoring prompt
-// Encodes E-E-A-T framework, readability analysis
+// Slim "scorecard" version — scores + brief summary only.
 
 import { buildIndustryLine, getIndustryContext } from './industry-context';
 
-export const SEO_SYSTEM_PROMPT = `You are an SEO and content quality analyst scoring website content against Google's E-E-A-T guidelines and readability best practices.
-
-You evaluate:
-- Technical SEO signals (provided from PageSpeed data)
-- Content readability (sentence length, vocabulary level, Flesch-Kincaid approximation)
-- E-E-A-T signals: Experience, Expertise, Authoritativeness, Trustworthiness
-- Content depth and comprehensiveness
-- Content freshness indicators
-
-Score each sub-dimension 0-10 with specific evidence.`;
+export const SEO_SYSTEM_PROMPT = `You are an SEO analyst. Score website content quality quickly and accurately. Be concise.`;
 
 export const SEO_USER_PROMPT = (context: {
   businessType: string;
@@ -27,46 +18,36 @@ export const SEO_USER_PROMPT = (context: {
   const industryLine = buildIndustryLine(context.industry);
   const industryGuidance = getIndustryContext(context.industry, 'seo');
 
-  return `Analyze this ${context.businessType} company's${industryLine} content quality.
+  return `Score this ${context.businessType} company's${industryLine} content quality.
 
-## Technical SEO Score (from PageSpeed)
-${context.technicalSeoScore}/100
+## Technical SEO: ${context.technicalSeoScore}/100
+## Meta: ${context.metaDescription || "Not found"}
+## Crawlable: ${context.isCrawlable ? "Yes" : "No"} | Structured Data: ${context.hasStructuredData ? "Yes" : "No"}
 
-## Meta Description
-${context.metaDescription || "Not found"}
+## Headline Structure (top 15)
+${context.headlineStructure.slice(0, 15).join("\n")}
 
-## Crawlable: ${context.isCrawlable ? "Yes" : "No"}
-## Structured Data: ${context.hasStructuredData ? "Yes" : "No"}
+## Content (excerpt)
+${context.bodyContent.slice(0, 2000)}
 
-## Headline Structure (top 25)
-${context.headlineStructure.slice(0, 25).join("\n")}
+${industryGuidance ? `## Industry Notes\n${industryGuidance}\n\n` : ''}Score 0-10 each:
+1. technical_seo (25%) — use provided PageSpeed SEO score
+2. readability (20%) — easy to read, appropriate vocabulary
+3. eeat_signals (20%) — experience, expertise, authority, trust
+4. content_depth (20%) — comprehensive, answers questions
+5. content_freshness (15%) — date indicators, recent content
 
-## Content (first 4000 chars)
-${context.bodyContent.slice(0, 4000)}
-
-${industryGuidance ? `## Industry-Specific Guidance\n${industryGuidance}\n\n` : ''}Score:
-1. **Technical SEO** (25%): Use the provided PageSpeed SEO score.
-2. **Readability** (20%): Is content easy to read? Appropriate sentence length and vocabulary?
-3. **E-E-A-T Signals** (20%): Evidence of experience, expertise, authoritativeness, trust?
-4. **Content Depth** (20%): Is content comprehensive? Does it answer likely questions?
-5. **Content Freshness** (15%): Are there date indicators? Recent content? Updated information?
-
-Respond in this exact JSON format:
+Respond in JSON:
 {
   "sub_scores": [
-    { "key": "technical_seo", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] },
-    { "key": "readability", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] },
-    { "key": "eeat_signals", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] },
-    { "key": "content_depth", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] },
-    { "key": "content_freshness", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] }
+    { "key": "technical_seo", "score": 7, "evidence": "brief reason" },
+    { "key": "readability", "score": 6, "evidence": "brief reason" },
+    { "key": "eeat_signals", "score": 5, "evidence": "brief reason" },
+    { "key": "content_depth", "score": 6, "evidence": "brief reason" },
+    { "key": "content_freshness", "score": 4, "evidence": "brief reason" }
   ],
-  "summary_free": "One-sentence assessment",
-  "summary_gated": "Detailed 3-5 sentence analysis",
-  "findings": [
-    { "title": "...", "severity": "critical|warning|info", "evidence": "...", "recommendation": "...", "playbook_chapter": "Chapter 3: SEO" }
-  ],
-  "quick_wins": [
-    { "title": "...", "description": "...", "impact": "high|medium|low", "effort": "quick|moderate|involved" }
-  ]
+  "summary_free": "One sentence overall assessment.",
+  "findings": [{ "title": "...", "severity": "critical|warning|info", "evidence": "...", "recommendation": "..." }],
+  "quick_wins": [{ "title": "...", "description": "...", "impact": "high|medium|low", "effort": "quick|moderate|involved" }]
 }`;
 };

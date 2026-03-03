@@ -2,8 +2,8 @@
 // Rate Limiting — SylvaPoint GTM Audit Tool
 // ---------------------------------------------------------------------------
 // Layered rate-limiting strategy backed by Supabase. Authenticated users
-// (with email) get unlimited audits. Anonymous users are limited to 1 free
-// audit per fingerprint+IP combination within a 30-day window.
+// (with email) get unlimited audits. Anonymous users are limited to 5 free
+// audits per fingerprint+IP combination within a 30-day window.
 // ---------------------------------------------------------------------------
 
 import { getAdminSupabase } from '@/lib/supabase/admin';
@@ -30,7 +30,7 @@ export interface RateLimitResult {
 // ---------------------------------------------------------------------------
 
 /** Number of free anonymous audits per fingerprint+IP combo. */
-const ANONYMOUS_LIMIT = 1;
+const ANONYMOUS_LIMIT = 5;
 
 /** TTL in days for rate limit records. */
 const TTL_DAYS = 30;

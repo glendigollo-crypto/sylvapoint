@@ -1,16 +1,11 @@
 // Phase 2: Positioning & Messaging scoring prompt
-// Encodes Dunford positioning, Schwartz sophistication, Hormozi value equation frameworks
+// Slim "scorecard" version — scores + brief summary only.
+// Deep analysis (evidence_quotes, gated summary, playbook chapters)
+// runs post-gate in a separate pass.
 
 import { buildIndustryLine, getIndustryContext } from './industry-context';
 
-export const POSITIONING_SYSTEM_PROMPT = `You are an expert GTM analyst scoring a website's positioning and messaging.
-
-You evaluate based on these frameworks:
-- April Dunford's Obviously Awesome: competitive alternatives, unique attributes, value for customers, best-fit customers, market category
-- Eugene Schwartz's Breakthrough Advertising: level of market sophistication (1-5), awareness levels
-- Alex Hormozi's $100M Offers: dream outcome, perceived likelihood, time delay, effort & sacrifice
-
-Score each sub-dimension 0-10 with specific evidence from the provided content.`;
+export const POSITIONING_SYSTEM_PROMPT = `You are an expert GTM analyst. Score a website's positioning quickly and accurately. Be concise.`;
 
 export const POSITIONING_USER_PROMPT = (context: {
   businessType: string;
@@ -24,46 +19,40 @@ export const POSITIONING_USER_PROMPT = (context: {
   const industryLine = buildIndustryLine(context.industry);
   const industryGuidance = getIndustryContext(context.industry, 'positioning');
 
-  return `Analyze this ${context.businessType} company${industryLine} targeting "${context.targetClients}".
+  return `Score this ${context.businessType} company${industryLine} targeting "${context.targetClients}".
 
-## Homepage Headlines (top 20)
-${context.headlines.slice(0, 20).join("\n")}
+## Headlines
+${context.headlines.slice(0, 10).join("\n")}
 
-## Homepage Body
-${context.bodyContent.slice(0, 3000)}
+## Body (excerpt)
+${context.bodyContent.slice(0, 1500)}
 
-## About Page
-${context.aboutContent.slice(0, 2000)}
+## About (excerpt)
+${context.aboutContent.slice(0, 800)}
 
-## Pricing Page
-${context.pricingContent.slice(0, 2000)}
-${industryGuidance ? `\n## Industry-Specific Guidance\n${industryGuidance}\n` : ''}
-Score each sub-dimension 0-10 and provide evidence:
-
-1. **Transformation Clarity** (weight: 20%): How clearly do they articulate the before→after transformation?
-2. **Differentiation** (weight: 20%): Can you identify what makes them different from alternatives?
-3. **Value Translation** (weight: 15%): Do they translate features into outcomes?
-4. **Target Specificity** (weight: 15%): How specifically defined is their ideal customer?
-5. **Proof Arsenal** (weight: 15%): What proof elements exist (case studies, testimonials, data)?
-6. **Mechanism Naming** (weight: 15%): Do they have a named methodology, framework, or unique mechanism?
+## Pricing
+${context.pricingContent.slice(0, 800)}
+${industryGuidance ? `\n## Industry Notes\n${industryGuidance}\n` : ''}
+Score 0-10 each:
+1. transformation_clarity (20%) — before→after clarity
+2. differentiation (20%) — what makes them unique
+3. value_translation (15%) — features→outcomes
+4. target_specificity (15%) — how specific is ideal customer
+5. proof_arsenal (15%) — case studies, testimonials, data
+6. mechanism_naming (15%) — named methodology or framework
 
 Respond in JSON:
 {
   "sub_scores": [
-    { "key": "transformation_clarity", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] },
-    { "key": "differentiation", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] },
-    { "key": "value_translation", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] },
-    { "key": "target_specificity", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] },
-    { "key": "proof_arsenal", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] },
-    { "key": "mechanism_naming", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] }
+    { "key": "transformation_clarity", "score": 7, "evidence": "brief reason" },
+    { "key": "differentiation", "score": 5, "evidence": "brief reason" },
+    { "key": "value_translation", "score": 6, "evidence": "brief reason" },
+    { "key": "target_specificity", "score": 4, "evidence": "brief reason" },
+    { "key": "proof_arsenal", "score": 8, "evidence": "brief reason" },
+    { "key": "mechanism_naming", "score": 3, "evidence": "brief reason" }
   ],
-  "summary_free": "One-sentence assessment",
-  "summary_gated": "Detailed 3-5 sentence analysis",
-  "findings": [
-    { "title": "...", "severity": "critical|warning|info", "evidence": "...", "recommendation": "...", "playbook_chapter": "Chapter 1: Positioning" }
-  ],
-  "quick_wins": [
-    { "title": "...", "description": "...", "impact": "high|medium|low", "effort": "quick|moderate|involved" }
-  ]
+  "summary_free": "One sentence overall assessment.",
+  "findings": [{ "title": "...", "severity": "critical|warning|info", "evidence": "...", "recommendation": "..." }],
+  "quick_wins": [{ "title": "...", "description": "...", "impact": "high|medium|low", "effort": "quick|moderate|involved" }]
 }`;
 };

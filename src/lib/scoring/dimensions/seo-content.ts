@@ -164,7 +164,7 @@ export async function scoreSeoContent(
       model: 'claude-haiku-4-5-20251001',
       systemPrompt: SEO_SYSTEM_PROMPT,
       userPrompt,
-      maxTokens: 4096,
+      maxTokens: 1500,
       temperature: 0.3,
     });
   } catch (err) {
@@ -180,7 +180,7 @@ export async function scoreSeoContent(
       evidence_quotes: string[];
     }>;
     summary_free: string;
-    summary_gated: string;
+    summary_gated?: string;
     findings: Array<{
       title: string;
       severity: 'critical' | 'warning' | 'info';
@@ -261,7 +261,7 @@ export async function scoreSeoContent(
     raw_score: Math.round(raw_score * 100) / 100,
     sub_scores,
     summary_free: parsed.summary_free,
-    summary_gated: parsed.summary_gated,
+    summary_gated: parsed.summary_gated ?? '[Unlock the full report for detailed analysis and recommendations.]',
     findings,
     quick_wins,
   };

@@ -1,18 +1,9 @@
 // Phase 2: Copy Effectiveness scoring prompt
-// Encodes 12 headline formulas, AI-tell detection, direct response copy principles
+// Slim "scorecard" version — scores + brief summary only.
 
 import { buildIndustryLine, getIndustryContext } from './industry-context';
 
-export const COPY_SYSTEM_PROMPT = `You are an expert copywriter and direct response analyst scoring website copy effectiveness.
-
-You evaluate based on:
-- Classic headline formulas (How-To, Number, Question, Command, News, Testimonial, Guarantee, Fear, Curiosity, Benefit, Story, Comparison)
-- Direct response principles: specificity, proof, urgency, clarity, voice
-- Claude Hopkins' Scientific Advertising principles
-- David Ogilvy's copywriting rules
-- AI-generated content detection patterns
-
-Score each sub-dimension 0-10 with specific evidence.`;
+export const COPY_SYSTEM_PROMPT = `You are an expert copywriter. Score website copy effectiveness quickly and accurately. Be concise.`;
 
 export const COPY_USER_PROMPT = (context: {
   businessType: string;
@@ -27,49 +18,41 @@ export const COPY_USER_PROMPT = (context: {
   const industryLine = buildIndustryLine(context.industry);
   const industryGuidance = getIndustryContext(context.industry, 'copy');
 
-  return `Analyze this ${context.businessType} company's${industryLine} copy targeting "${context.targetClients}".
+  return `Score this ${context.businessType} company's${industryLine} copy targeting "${context.targetClients}".
 
-## Headlines Found (top 20)
-${context.headlines.slice(0, 20).join("\n")}
+## Headlines (top 10)
+${context.headlines.slice(0, 10).join("\n")}
 
-## CTAs Found (top 15)
-${context.ctas.slice(0, 15).join("\n")}
+## CTAs (top 10)
+${context.ctas.slice(0, 10).join("\n")}
 
-## Body Copy (first 3000 chars)
-${context.bodyContent.slice(0, 3000)}
+## Body (excerpt)
+${context.bodyContent.slice(0, 1500)}
 
-## AI-Tell Scanner Results
-Score: ${context.aiTellScore}/100
-Flags: ${context.aiTellFlags.join(", ") || "None"}
+## AI-Tell Scanner: ${context.aiTellScore}/100. Flags: ${context.aiTellFlags.slice(0, 5).join(", ") || "None"}
 
-${industryGuidance ? `## Industry-Specific Guidance\n${industryGuidance}\n\n` : ''}Score each sub-dimension 0-10:
+${industryGuidance ? `## Industry Notes\n${industryGuidance}\n\n` : ''}Score 0-10 each:
+1. headline_quality (20%) — proven formulas, specificity
+2. cta_effectiveness (15%) — clear, action-oriented
+3. proof_specificity (15%) — specific numbers, names, results
+4. pain_articulation (15%) — understanding of customer pain
+5. page_structure (15%) — scannable, clear hierarchy
+6. ai_tell_score (10%) — use provided scanner score
+7. objection_handling (10%) — addresses objections
 
-1. **Headline Quality** (20%): Do headlines follow proven formulas? Are they specific and compelling?
-2. **CTA Effectiveness** (15%): Are CTAs clear, action-oriented, benefit-driven?
-3. **Proof & Specificity** (15%): Does copy use specific numbers, names, results?
-4. **Pain Articulation** (15%): Does copy demonstrate deep understanding of customer pain?
-5. **Page Structure** (15%): Is copy scannable? Clear hierarchy? Logical flow?
-6. **AI-Tell Score** (10%): Use the provided AI-tell scanner score.
-7. **Objection Handling** (10%): Does the copy address and overcome likely objections?
-
-Respond in this exact JSON format:
+Respond in JSON:
 {
   "sub_scores": [
-    { "key": "headline_quality", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] },
-    { "key": "cta_effectiveness", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] },
-    { "key": "proof_specificity", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] },
-    { "key": "pain_articulation", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] },
-    { "key": "page_structure", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] },
-    { "key": "ai_tell_score", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] },
-    { "key": "objection_handling", "score": 0-10, "evidence": "...", "evidence_quotes": ["..."] }
+    { "key": "headline_quality", "score": 7, "evidence": "brief reason" },
+    { "key": "cta_effectiveness", "score": 5, "evidence": "brief reason" },
+    { "key": "proof_specificity", "score": 6, "evidence": "brief reason" },
+    { "key": "pain_articulation", "score": 4, "evidence": "brief reason" },
+    { "key": "page_structure", "score": 7, "evidence": "brief reason" },
+    { "key": "ai_tell_score", "score": 8, "evidence": "brief reason" },
+    { "key": "objection_handling", "score": 5, "evidence": "brief reason" }
   ],
-  "summary_free": "One-sentence assessment",
-  "summary_gated": "Detailed 3-5 sentence analysis",
-  "findings": [
-    { "title": "...", "severity": "critical|warning|info", "evidence": "...", "recommendation": "...", "playbook_chapter": "Chapter 2: Copy" }
-  ],
-  "quick_wins": [
-    { "title": "...", "description": "...", "impact": "high|medium|low", "effort": "quick|moderate|involved" }
-  ]
+  "summary_free": "One sentence overall assessment.",
+  "findings": [{ "title": "...", "severity": "critical|warning|info", "evidence": "...", "recommendation": "..." }],
+  "quick_wins": [{ "title": "...", "description": "...", "impact": "high|medium|low", "effort": "quick|moderate|involved" }]
 }`;
 };
