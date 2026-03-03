@@ -40,6 +40,10 @@ export const metadata: Metadata = {
     description:
       "Go-to-Market Architect for Web3, Fintech, and Greentech pioneers.",
   },
+  icons: {
+    icon: "/images/generated/sn-logo-hex.png",
+    apple: "/images/generated/sn-logo-hex.png",
+  },
   robots: {
     index: true,
     follow: true,

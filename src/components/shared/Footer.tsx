@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 
@@ -63,9 +64,18 @@ export function Footer() {
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           {/* Brand Column */}
           <div className="sm:col-span-2 lg:col-span-1">
-            <span className="text-lg font-bold text-sylva-50">
-              Sylvia Ndunge
-            </span>
+            <div className="flex items-center gap-2">
+              <Image
+                src="/images/generated/sn-logo-hex.png"
+                alt="SN"
+                width={32}
+                height={32}
+                className="rounded-sm"
+              />
+              <span className="text-lg font-bold text-sylva-50">
+                Sylvia Ndunge
+              </span>
+            </div>
             <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
               Go-to-Market Architect for Web3, Fintech, and Greentech pioneers.
               Turning innovation into market traction.

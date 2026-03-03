@@ -77,7 +77,7 @@ export default function WorkWithMePage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero */}
-      <section className="relative bg-gradient-to-br from-sylva-50 via-sylva-100 to-sylva-200 py-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
+      <section className="relative bg-gradient-to-br from-sylva-950 via-sylva-900 to-sylva-800 py-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
         <Image
           src="/images/generated/services-hero.png"
           alt=""
@@ -88,7 +88,7 @@ export default function WorkWithMePage() {
           <p className="text-sm font-semibold text-amber-500 uppercase tracking-wider mb-4">
             Fractional GTM Leadership
           </p>
-          <h1 className="text-4xl font-bold text-sylva-950 sm:text-5xl leading-tight">
+          <h1 className="text-4xl font-bold text-sylva-50 sm:text-5xl leading-tight">
             I&apos;m a Go-to-Market Architect
             <br />
             for <span className="text-amber-500">Pioneers</span>
@@ -179,9 +179,9 @@ export default function WorkWithMePage() {
       </section>
 
       {/* CTA */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-sylva-50 via-sylva-100 to-sylva-200">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-sylva-950 via-sylva-900 to-sylva-800">
         <div className="mx-auto max-w-3xl text-center">
-          <h2 className="text-3xl font-bold text-sylva-950 mb-4">
+          <h2 className="text-3xl font-bold text-sylva-50 mb-4">
             Ready to Build Your GTM?
           </h2>
           <p className="text-sylva-400 mb-8">
@@ -190,7 +190,7 @@ export default function WorkWithMePage() {
           </p>
           <Link
             href="/book"
-            className="inline-flex items-center rounded-lg bg-amber-500 px-8 py-4 text-lg font-semibold text-sylva-950 transition-all hover:bg-amber-400 btn-lift"
+            className="inline-flex items-center rounded-lg bg-amber-500 px-8 py-4 text-lg font-semibold text-white transition-all hover:bg-amber-400 btn-lift"
           >
             Book a Strategy Call
           </Link>

@@ -5,18 +5,10 @@ import { gsap, useGSAP } from "@/lib/gsap";
 import { ScoreGauge } from "@/components/scorecard/ScoreGauge";
 import { RadarChart } from "@/components/scorecard/RadarChart";
 import { DimensionCard } from "@/components/scorecard/DimensionCard";
-import { GapCard } from "@/components/scorecard/GapCard";
 import { EmailGateModal } from "@/components/gate/EmailGateModal";
+import { AuditPresentation } from "@/components/presentation/AuditPresentation";
 import { ShareButton } from "@/components/shared/ShareButton";
 import Link from "next/link";
-import {
-  Target,
-  PenTool,
-  Search,
-  Magnet,
-  Gauge,
-  Eye,
-} from "lucide-react";
 
 interface AuditResultsProps {
   slug: string;
@@ -57,6 +49,7 @@ interface AuditResultsProps {
         impact: string;
         effort: string;
       }>;
+      illustrationUrl?: string | null;
     }>;
     findings_count?: number;
     teaser_findings?: Array<{
@@ -92,25 +85,6 @@ function getGradeColorCSS(grade: string): string {
   return "var(--grade-f)";
 }
 
-const DIMENSION_ICONS: Record<
-  string,
-  React.ComponentType<{ className?: string; size?: number }>
-> = {
-  positioning: Target,
-  copy: PenTool,
-  seo: Search,
-  lead_capture: Magnet,
-  performance: Gauge,
-  visual: Eye,
-};
-
-function severityColor(severity: string): string {
-  if (severity === "critical")
-    return "bg-red-500/20 text-red-400 border-red-500/30";
-  if (severity === "warning")
-    return "bg-orange-500/20 text-orange-400 border-orange-500/30";
-  return "bg-blue-500/20 text-blue-400 border-blue-500/30";
-}
 
 export function AuditResults({ slug, initialData }: AuditResultsProps) {
   const [data, setData] = useState(initialData);
@@ -268,48 +242,6 @@ function AuditResultsInner({
         });
       });
 
-      // Insight cards — stagger from bottom
-      gsap.set(".gsap-insight", { opacity: 0, y: 20 });
-      gsap.to(".gsap-insight", {
-        opacity: 1,
-        y: 0,
-        duration: 0.4,
-        stagger: 0.1,
-        ease: "power2.out",
-        scrollTrigger: {
-          trigger: ".gsap-insight",
-          start: "top 85%",
-        },
-      });
-
-      // Gap cards — stagger from bottom
-      gsap.set(".gap-card", { opacity: 0, y: 30 });
-      gsap.to(".gap-card", {
-        opacity: 1,
-        y: 0,
-        duration: 0.5,
-        stagger: 0.12,
-        ease: "power2.out",
-        scrollTrigger: {
-          trigger: ".gap-card",
-          start: "top 85%",
-        },
-      });
-
-      // Teaser finding cards — stagger
-      gsap.set(".gsap-teaser", { opacity: 0, y: 20 });
-      gsap.to(".gsap-teaser", {
-        opacity: 1,
-        y: 0,
-        duration: 0.4,
-        stagger: 0.1,
-        ease: "power2.out",
-        scrollTrigger: {
-          trigger: ".gsap-teaser",
-          start: "top 85%",
-        },
-      });
-
       // CTA cards — stagger
       gsap.set(".cta-card", { opacity: 0, y: 20 });
       gsap.to(".cta-card", {
@@ -404,140 +336,14 @@ function AuditResultsInner({
         </section>
       )}
 
-      {/* C2. What We Found — dimension insights */}
-      {dimensions.length > 0 && (
-        <section className="px-4 pb-16">
-          <div className="mx-auto max-w-4xl">
-            <h2 className="gsap-clip text-xl font-bold text-sylva-50 mb-6">
-              What We Found
-            </h2>
-            <div className="grid gap-4 md:grid-cols-2">
-              {dimensions.map((dim) => {
-                const Icon = DIMENSION_ICONS[dim.dimension] ?? Target;
-                const gradeColor = getGradeColorCSS(dim.grade);
-                return (
-                  <div
-                    key={dim.dimension}
-                    className="gsap-insight rounded-xl border border-sylva-700 bg-sylva-900 p-5"
-                  >
-                    <div className="flex items-center gap-3 mb-3">
-                      <div
-                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
-                        style={{
-                          backgroundColor: `${gradeColor}15`,
-                          color: gradeColor,
-                        }}
-                      >
-                        <Icon size={18} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-semibold text-sylva-50 truncate">
-                          {dim.label}
-                        </h3>
-                      </div>
-                      <span
-                        className="rounded-md px-2 py-0.5 text-xs font-bold shrink-0"
-                        style={{
-                          backgroundColor: `${gradeColor}20`,
-                          color: gradeColor,
-                          border: `1px solid ${gradeColor}40`,
-                        }}
-                      >
-                        {dim.grade}
-                      </span>
-                    </div>
-                    {dim.summaryFree && (
-                      <p className="text-sm text-sylva-300 leading-relaxed">
-                        {dim.summaryFree}
-                      </p>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* D. Top Leaks */}
-      {gaps.length > 0 && (
-        <section className="px-4 pb-16">
-          <div className="mx-auto max-w-4xl">
-            <h2 className="gsap-clip text-xl font-bold text-sylva-50 mb-6">
-              Top {gaps.length} Revenue Leaks
-            </h2>
-            <div className="grid gap-4 md:grid-cols-3">
-              {gaps.map((gap, index) => (
-                <GapCard
-                  key={gap.dimension_key}
-                  rank={index + 1}
-                  dimensionLabel={gap.label}
-                  dimensionKey={gap.dimension_key}
-                  score={gap.score}
-                  grade={gap.grade}
-                  quickWin={gap.quick_win}
-                  summaryFree={gap.summary_free}
-                />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* D2. Sample Findings (pre-gate only) */}
-      {!isUnlocked && data.teaser_findings && data.teaser_findings.length > 0 && (
-        <section className="px-4 pb-12">
-          <div className="mx-auto max-w-4xl">
-            <h2 className="gsap-clip text-xl font-bold text-sylva-50 mb-6">
-              Sample Findings
-            </h2>
-            <div className="grid gap-4 md:grid-cols-2">
-              {data.teaser_findings.map((finding, i) => (
-                <div
-                  key={i}
-                  className="gsap-teaser rounded-xl border border-sylva-700 bg-sylva-900 p-5"
-                >
-                  <div className="flex items-center gap-2 mb-2">
-                    <span
-                      className={`inline-flex rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase ${severityColor(finding.severity)}`}
-                    >
-                      {finding.severity}
-                    </span>
-                    <span className="text-xs text-sylva-500">
-                      {finding.dimension_label}
-                    </span>
-                  </div>
-                  <p className="text-sm font-medium text-sylva-50">
-                    {finding.title}
-                  </p>
-                  <p className="mt-2 text-xs italic text-sylva-500">
-                    Unlock report for details &amp; recommendations
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* D3. Findings count callout (pre-gate only) */}
-      {!isUnlocked && (data.findings_count ?? totalFindings) > 0 && (
-        <section className="px-4 pb-8">
-          <div className="mx-auto max-w-3xl text-center">
-            <p className="text-lg text-sylva-400">
-              We detected{" "}
-              <span className="font-score font-bold text-amber-400">
-                {data.findings_count ?? totalFindings}
-              </span>{" "}
-              findings across{" "}
-              <span className="font-score font-bold text-amber-400">
-                {dimensions.length}
-              </span>{" "}
-              dimensions
-            </p>
-          </div>
-        </section>
-      )}
+      {/* C2-D3. Cinematic Presentation — dimension slides, intel briefing, findings */}
+      <AuditPresentation
+        dimensions={dimensions}
+        gaps={gaps}
+        teaserFindings={data.teaser_findings}
+        findingsCount={data.findings_count ?? totalFindings}
+        isUnlocked={isUnlocked}
+      />
 
       {/* E. Email Gate / Unlocked Content */}
       <section className="px-4 pb-16">

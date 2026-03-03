@@ -47,6 +47,25 @@ export async function GET(
       .eq('audit_id', audit.id)
       .order('dimension_key');
 
+    // ----- Fetch illustration paths -----------------------------------------
+    const { data: illustrationRows } = await supabase
+      .from('dimension_illustrations')
+      .select('dimension_key, storage_path')
+      .eq('audit_id', audit.id);
+
+    // Generate signed URLs (1hr expiry) for each illustration
+    const illustrationUrls: Record<string, string> = {};
+    if (illustrationRows && illustrationRows.length > 0) {
+      for (const row of illustrationRows) {
+        const { data: signedData } = await supabase.storage
+          .from('audit-assets')
+          .createSignedUrl(row.storage_path as string, 3600);
+        if (signedData?.signedUrl) {
+          illustrationUrls[row.dimension_key as string] = signedData.signedUrl;
+        }
+      }
+    }
+
     // Map DB rows to the shape the frontend expects
     const dimensionScores = (dimRows ?? []).map((d: Record<string, unknown>) => ({
       dimension: d.dimension_key as string,
@@ -57,6 +76,7 @@ export async function GET(
       summaryGated: (d.summary_gated as string) || null,
       findings: (d.findings as unknown[]) ?? [],
       quickWins: (d.quick_wins as unknown[]) ?? [],
+      illustrationUrl: illustrationUrls[d.dimension_key as string] || null,
     }));
 
     // Build top_gaps from the 3 lowest-scoring dimensions
@@ -96,6 +116,7 @@ export async function GET(
         score: d.score,
         grade: d.grade,
         summaryFree: d.summaryFree,
+        illustrationUrl: d.illustrationUrl,
       }));
 
       // Compute findings count and teaser findings from full dimension data

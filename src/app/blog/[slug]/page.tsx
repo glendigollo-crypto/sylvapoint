@@ -1,214 +1,43 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
+import { getBlogPost, BLOG_POSTS } from "@/lib/blog/posts";
 
 interface BlogPostPageProps {
   params: Promise<{ slug: string }>;
 }
 
-// Static blog content — will be migrated to MDX/CMS in Phase 7
-const BLOG_CONTENT: Record<
-  string,
-  { title: string; date: string; category: string; content: string }
-> = {
-  "what-is-gtm-readiness": {
-    title: "What is GTM Readiness? The Complete Guide",
-    date: "2026-03-01",
-    category: "Framework",
-    content: `
-## What is GTM Readiness?
-
-Go-To-Market (GTM) readiness measures how prepared your business is to effectively acquire, convert, and retain customers through your online presence. Unlike traditional website audits that focus on technical SEO or page speed, a GTM readiness assessment evaluates the **complete customer acquisition funnel**.
-
-## Why GTM Readiness Matters
-
-Most businesses invest heavily in driving traffic but neglect the conversion infrastructure. A website with great SEO but poor positioning will attract visitors who don't convert. A site with compelling copy but slow performance will lose visitors before they read a word.
-
-GTM readiness connects all six dimensions into a unified score that reflects your actual ability to turn visitors into customers.
-
-## The 6 Dimensions
-
-1. **Positioning & Messaging** — Is your value proposition clear, differentiated, and targeted?
-2. **Copy Effectiveness** — Does your copy persuade, or does it just describe?
-3. **SEO & Content Quality** — Can your ideal customers find you?
-4. **Lead Capture** — Are you converting visitors into leads effectively?
-5. **Website Performance** — Is your site fast, accessible, and mobile-friendly?
-6. **Visual & Creative** — Does your design build trust and guide action?
-
-## How to Get Started
-
-The fastest way to assess your GTM readiness is to run a free audit. In 60 seconds, you'll get a score across all 6 dimensions with specific recommendations for improvement.
-    `,
-  },
-  "gtm-audit-how-to-score": {
-    title: "GTM Audit: How to Score Your Go-To-Market Strategy",
-    date: "2026-02-25",
-    category: "Guide",
-    content: `
-## How We Score Your GTM Strategy
-
-The SylvaPoint GTM audit uses a combination of AI analysis and rule-based scoring to evaluate your website across 6 dimensions. Each dimension is weighted based on your business type.
-
-## The Scoring Process
-
-1. **Crawl** — We analyze your homepage and up to 5 key pages
-2. **Extract** — Headlines, CTAs, forms, images, videos, and testimonials are identified
-3. **Analyze** — Each dimension is scored using frameworks from Dunford, Schwartz, Hormozi, and more
-4. **Score** — Sub-scores are weighted and combined into a composite 0-100 score
-
-## Understanding Your Grade
-
-- **A (85-100)** — Exceptional GTM presence. You're in the top 10%.
-- **B (70-84)** — Good foundation with room for optimization.
-- **C (55-69)** — Average. Significant gaps are costing you conversions.
-- **D (40-54)** — Below average. Multiple critical issues need attention.
-- **F (0-39)** — Critical. Your GTM infrastructure needs a complete overhaul.
-
-## What Makes a Good Score?
-
-The average website scores between 50-60 (D+ to C-). Scores above 75 put you in the top 20% of businesses we've audited. The goal isn't perfection — it's identifying the highest-impact improvements.
-    `,
-  },
-  "website-grader-vs-gtm-audit": {
-    title: "Free Website Grader vs GTM Audit: What's the Difference?",
-    date: "2026-02-20",
-    category: "Comparison",
-    content: `
-## Website Graders vs GTM Audits
-
-Tools like HubSpot Website Grader, SEOptimer, and GTmetrix are useful for checking technical health. But they only tell part of the story.
-
-## What Website Graders Check
-
-- Page speed and Core Web Vitals
-- Mobile responsiveness
-- Basic SEO tags (title, meta description, headings)
-- Security (SSL, HTTPS)
-- Image optimization
-
-## What They Miss
-
-- **Positioning clarity** — Is your value proposition compelling?
-- **Copy persuasion** — Do your headlines follow proven formulas?
-- **Lead capture quality** — Is your lead magnet relevant to your audience?
-- **Visual trust signals** — Does your design build credibility?
-- **Conversion readiness** — Can visitors easily take the next step?
-
-## The GTM-6 Framework Difference
-
-A GTM audit evaluates your website as a **revenue generation tool**, not just a technical artifact. It answers: "If a qualified prospect lands on this site, will they understand what you do, trust you, and take action?"
-
-That's the question that matters for revenue. Page speed is important, but it's only 12% of the picture.
-    `,
-  },
-  "6-dimensions-gtm-readiness": {
-    title: "The 6 Dimensions of GTM Readiness (The GTM-6 Framework)",
-    date: "2026-02-15",
-    category: "Framework",
-    content: `
-## The GTM-6 Framework
-
-The GTM-6 Framework evaluates your go-to-market presence across six interconnected dimensions. Each dimension draws from established marketing and business frameworks.
-
-### 1. Positioning & Messaging (18%)
-
-Based on April Dunford's positioning methodology, Eugene Schwartz's awareness levels, and Alex Hormozi's value equation. We evaluate transformation clarity, differentiation, value translation, target specificity, proof arsenal, and mechanism naming.
-
-### 2. Copy Effectiveness (15%)
-
-Evaluates your headlines against 12 proven formulas (Hopkins, Ogilvy, Schwartz), checks for AI-generated content patterns, measures CTA effectiveness, pain articulation, and objection handling.
-
-### 3. SEO & Content Quality (15%)
-
-Combines Google's E-E-A-T framework with readability analysis, content depth measurement, and freshness signals. Technical SEO is scored via Lighthouse.
-
-### 4. Lead Capture (15%)
-
-Assesses your lead magnets against 15 proven formats, evaluates offer specificity, form friction, bridge-to-paid quality, and social proof at the point of capture.
-
-### 5. Website Performance (12%)
-
-100% based on Google Lighthouse scores: performance, accessibility, SEO, and best practices. No subjectivity — pure technical measurement.
-
-### 6. Visual & Creative (25%)
-
-The highest-weighted dimension. Evaluates product photography, video content, platform visual compliance, brand consistency, and human presence/authenticity.
-    `,
-  },
-  "how-to-improve-gtm-score": {
-    title: "How to Improve Your GTM Score",
-    date: "2026-02-10",
-    category: "Tips",
-    content: `
-## Quick Wins to Improve Your GTM Score
-
-Here are practical tips for each dimension that can boost your score by 20+ points.
-
-### Positioning (+5-10 points)
-
-- Add a clear transformation statement above the fold: "We help [target] achieve [outcome] through [mechanism]"
-- Include at least 3 proof points (numbers, logos, testimonials)
-- Name your methodology or framework
-
-### Copy (+5-10 points)
-
-- Rewrite your H1 using a proven headline formula
-- Add specific numbers to your claims
-- Remove AI-generated filler words (delve, comprehensive, leverage)
-- Add at least one CTA per scroll depth
-
-### SEO (+3-5 points)
-
-- Add a unique meta description to every page
-- Ensure H1-H3 hierarchy is logical
-- Add schema markup for your business type
-
-### Lead Capture (+5-10 points)
-
-- Add a lead magnet above the fold
-- Reduce form fields to email-only for initial capture
-- Add social proof next to your opt-in form
-
-### Performance (+3-5 points)
-
-- Compress images to WebP format
-- Implement lazy loading for below-fold images
-- Remove unused JavaScript
-
-### Visual (+5-10 points)
-
-- Add a professional hero image or video
-- Ensure brand colors are consistent across all pages
-- Add human photos (team, customers) to build trust
-    `,
-  },
-};
-
 export async function generateMetadata({
   params,
 }: BlogPostPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const post = BLOG_CONTENT[slug];
+  const post = getBlogPost(slug);
 
   if (!post) {
     return { title: "Blog Post Not Found" };
   }
 
   return {
-    title: `${post.title} — SylvaPoint Blog`,
-    description: post.content.slice(0, 160).replace(/[#\n]/g, "").trim(),
+    title: post.title,
+    description: post.excerpt,
+    openGraph: {
+      title: post.title,
+      description: post.excerpt,
+      images: [{ url: post.image, width: 1200, height: 630 }],
+    },
   };
 }
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const { slug } = await params;
-  const post = BLOG_CONTENT[slug];
+  const post = getBlogPost(slug);
 
   if (!post) {
     notFound();
   }
 
-  // Simple markdown-to-html conversion for headings and lists
+  // Simple markdown-to-html conversion
   const htmlContent = post.content
     .split("\n")
     .map((line) => {
@@ -220,7 +49,10 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       if (trimmed.startsWith("- "))
         return `<li class="text-sylva-300 ml-4">${trimmed
           .slice(2)
-          .replace(/\*\*(.*?)\*\*/g, '<strong class="text-sylva-50">$1</strong>')}</li>`;
+          .replace(
+            /\*\*(.*?)\*\*/g,
+            '<strong class="text-sylva-50">$1</strong>'
+          )}</li>`;
       if (trimmed.length === 0) return "";
       return `<p class="text-sylva-300 mb-4 leading-relaxed">${trimmed.replace(
         /\*\*(.*?)\*\*/g,
@@ -229,10 +61,45 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     })
     .join("\n");
 
+  // Get related posts (same funnel stage, excluding current)
+  const relatedPosts = BLOG_POSTS.filter(
+    (p) => p.slug !== post.slug && p.funnelStage === post.funnelStage
+  ).slice(0, 2);
+
+  // If not enough same-stage, fill from next stage
+  if (relatedPosts.length < 2) {
+    const nextStage =
+      post.funnelStage === "Awareness"
+        ? "Education"
+        : post.funnelStage === "Education"
+          ? "Conversion"
+          : "Awareness";
+    const extras = BLOG_POSTS.filter(
+      (p) =>
+        p.slug !== post.slug &&
+        p.funnelStage === nextStage &&
+        !relatedPosts.includes(p)
+    ).slice(0, 2 - relatedPosts.length);
+    relatedPosts.push(...extras);
+  }
+
   return (
     <div className="min-h-screen bg-white">
+      {/* Header Image */}
+      <div className="relative w-full aspect-[21/9] sm:aspect-[3/1] bg-sylva-900">
+        <Image
+          src={post.image}
+          alt={post.title}
+          fill
+          className="object-cover"
+          priority
+          sizes="100vw"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent" />
+      </div>
+
       {/* Article */}
-      <article className="px-4 py-12">
+      <article className="px-4 -mt-12 relative">
         <div className="mx-auto max-w-3xl">
           <div className="mb-2">
             <Link
@@ -247,9 +114,27 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               <span className="text-xs font-semibold text-amber-500 uppercase tracking-wider">
                 {post.category}
               </span>
-              <span className="text-xs text-muted-foreground">{post.date}</span>
+              <span
+                className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border ${
+                  post.funnelStage === "Awareness"
+                    ? "bg-blue-50 text-blue-700 border-blue-200"
+                    : post.funnelStage === "Education"
+                      ? "bg-purple-50 text-purple-700 border-purple-200"
+                      : "bg-green-50 text-green-700 border-green-200"
+                }`}
+              >
+                {post.funnelStage}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {post.readTime}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {post.displayDate}
+              </span>
             </div>
-            <h1 className="text-3xl font-bold text-sylva-50">{post.title}</h1>
+            <h1 className="text-3xl font-bold text-sylva-50 leading-tight">
+              {post.title}
+            </h1>
           </div>
 
           <div
@@ -257,36 +142,90 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             dangerouslySetInnerHTML={{ __html: htmlContent }}
           />
 
+          {/* Post-specific CTA */}
+          <div className="mt-12 rounded-xl bg-gradient-to-br from-sylva-950 via-sylva-900 to-sylva-800 p-8 text-center">
+            <h2 className="text-xl font-bold text-sylva-50 mb-2">
+              {post.cta.text === "Audit Your GTM Free"
+                ? "Ready to see where your GTM stands?"
+                : post.cta.text === "See Your Narrative Score"
+                  ? "How clear is your narrative?"
+                  : post.cta.text === "Get Your GTM-6 Score"
+                    ? "Get your score across all 6 dimensions"
+                    : post.cta.text === "Score Your Positioning"
+                      ? "See how your positioning stacks up"
+                      : "Get your free GTM scorecard"}
+            </h2>
+            <p className="text-sylva-400 mb-4">
+              Free. No email required. Results in 60 seconds.
+            </p>
+            <Link
+              href={post.cta.href}
+              className="inline-block rounded-lg bg-amber-500 px-6 py-3 font-semibold text-white hover:bg-amber-400 transition-colors"
+            >
+              {post.cta.text}
+            </Link>
+          </div>
+
           {/* Author Bio */}
-          <div className="mt-12 flex items-center gap-4 rounded-xl border border-border bg-sylva-900 p-6">
-            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center text-white font-bold text-lg shrink-0">
-              SN
+          <div className="mt-8 flex items-center gap-4 rounded-xl border border-border bg-sylva-900 p-6">
+            <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-amber-500/20 shrink-0">
+              <Image
+                src="/images/generated/sn-logo-hex.png"
+                alt="Sylvia Ndunge"
+                width={56}
+                height={56}
+                className="object-cover w-full h-full"
+              />
             </div>
             <div>
               <p className="font-semibold text-sylva-50">Sylvia Ndunge</p>
               <p className="text-sm text-muted-foreground">
-                Go-to-Market Architect for Web3, Fintech, and Greentech pioneers.
+                Go-to-Market Architect for Web3, Fintech, and Greentech
+                pioneers.
               </p>
             </div>
           </div>
 
-          {/* CTA */}
-          <div className="mt-8 rounded-xl border border-border bg-sylva-900 p-8 text-center">
-            <h2 className="text-xl font-bold text-sylva-50 mb-2">
-              Ready to see your score?
-            </h2>
-            <p className="text-muted-foreground mb-4">
-              Get a free GTM audit in 60 seconds.
-            </p>
-            <Link
-              href="/audit"
-              className="inline-block rounded-lg bg-amber-500 px-6 py-3 font-semibold text-sylva-950 hover:bg-amber-400"
-            >
-              Start Free Audit
-            </Link>
-          </div>
+          {/* Related Posts */}
+          {relatedPosts.length > 0 && (
+            <div className="mt-12">
+              <h3 className="text-lg font-bold text-sylva-50 mb-6">
+                Continue Reading
+              </h3>
+              <div className="grid gap-6 sm:grid-cols-2">
+                {relatedPosts.map((related) => (
+                  <Link
+                    key={related.slug}
+                    href={`/blog/${related.slug}`}
+                    className="group block rounded-xl border border-border bg-white overflow-hidden hover:border-sylva-600 hover:shadow-md transition-all"
+                  >
+                    <div className="relative aspect-[16/9] overflow-hidden bg-sylva-900">
+                      <Image
+                        src={related.image}
+                        alt={related.title}
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        sizes="(max-width: 640px) 100vw, 50vw"
+                      />
+                    </div>
+                    <div className="p-4">
+                      <span className="text-xs font-semibold text-amber-500 uppercase tracking-wider">
+                        {related.category}
+                      </span>
+                      <h4 className="mt-1 text-sm font-bold text-sylva-50 group-hover:text-amber-500 transition-colors line-clamp-2">
+                        {related.title}
+                      </h4>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </article>
+
+      {/* Spacer before footer */}
+      <div className="h-16" />
     </div>
   );
 }

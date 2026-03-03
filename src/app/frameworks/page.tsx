@@ -73,12 +73,12 @@ export default function FrameworksPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero */}
-      <section className="bg-gradient-to-br from-sylva-50 via-sylva-100 to-sylva-200 py-20 px-4 sm:px-6 lg:px-8">
+      <section className="bg-gradient-to-br from-sylva-950 via-sylva-900 to-sylva-800 py-20 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl text-center">
           <p className="text-sm font-semibold text-amber-500 uppercase tracking-wider mb-4">
             Strategic Blueprints
           </p>
-          <h1 className="text-4xl font-bold text-sylva-950 sm:text-5xl">
+          <h1 className="text-4xl font-bold text-sylva-50 sm:text-5xl">
             Frameworks for Founders
           </h1>
           <p className="mt-6 text-lg text-sylva-400 max-w-2xl mx-auto">
@@ -132,7 +132,7 @@ export default function FrameworksPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/work-with-me"
-              className="rounded-lg bg-amber-500 px-8 py-4 text-lg font-semibold text-sylva-950 transition-all hover:bg-amber-400 btn-lift"
+              className="rounded-lg bg-amber-500 px-8 py-4 text-lg font-semibold text-white transition-all hover:bg-amber-400 btn-lift"
             >
               Work With Me
             </Link>

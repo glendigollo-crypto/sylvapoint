@@ -14,6 +14,7 @@ import type { PageSpeedResult, ScorerInput, DimensionScorerResult } from '@/lib/
 import type { SocialData } from '@/lib/crawl/social';
 import type { CompetitorSnapshot } from '@/lib/scoring/types';
 import { analyzeCompetitor } from '@/lib/crawl/competitor';
+import { generateDimensionIllustration } from '@/lib/gemini/illustrations';
 import type { BusinessType, TopGap } from '@/types/audit';
 
 // Individual dimension scorers (each runs in its own Inngest step)
@@ -436,6 +437,99 @@ export const auditPipeline = inngest.createFunction(
         dimensions,
         top_gaps: topGaps,
       };
+    });
+
+    // ---------------------------------------------------------------
+    // Step 5c — Generate editorial illustrations (non-fatal)
+    // ---------------------------------------------------------------
+    await step.run('generate-illustrations', async () => {
+      try {
+        console.log('[illustrations] Starting. GEMINI_API_KEY present:', !!process.env.GEMINI_API_KEY);
+        console.log('[illustrations] Dimensions count:', scoringResult.dimensions?.length);
+
+        await updateAudit(audit_id, {
+          progress_pct: 82,
+          current_step: 'Generating editorial illustrations...',
+        });
+
+        const dims = scoringResult.dimensions;
+        if (!dims || dims.length === 0) {
+          console.warn('[illustrations] No dimensions in scoringResult, skipping');
+          return;
+        }
+
+        const results = await Promise.allSettled(
+          dims.map((dim) => {
+            console.log(`[illustrations] Generating for ${dim.dimension} (score: ${dim.score})`);
+            return generateDimensionIllustration(
+              dim.dimension,
+              dim.score,
+              dim.summaryFree || ''
+            );
+          })
+        );
+
+        let successCount = 0;
+        let failCount = 0;
+        const supabase = getAdminSupabase();
+
+        for (let i = 0; i < dims.length; i++) {
+          const result = results[i];
+          if (result.status === 'rejected') {
+            console.warn(`[illustrations] ${dims[i].dimension} rejected:`, result.reason);
+            failCount++;
+            continue;
+          }
+          if (!result.value) {
+            console.warn(`[illustrations] ${dims[i].dimension} returned null`);
+            failCount++;
+            continue;
+          }
+
+          console.log(`[illustrations] ${dims[i].dimension} generated, ${result.value.length} bytes. Uploading...`);
+          const storagePath = `illustrations/${audit_id}/${dims[i].dimension}.png`;
+
+          const { error: uploadErr } = await supabase.storage
+            .from('audit-assets')
+            .upload(storagePath, result.value, {
+              contentType: 'image/png',
+              upsert: true,
+            });
+
+          if (uploadErr) {
+            console.warn(`[illustrations] Upload failed for ${dims[i].dimension}:`, uploadErr.message);
+            failCount++;
+            continue;
+          }
+
+          const { error: dbErr } = await supabase.from('dimension_illustrations').upsert(
+            {
+              audit_id,
+              dimension_key: dims[i].dimension,
+              storage_path: storagePath,
+            },
+            { onConflict: 'audit_id,dimension_key' }
+          );
+
+          if (dbErr) {
+            console.warn(`[illustrations] DB insert failed for ${dims[i].dimension}:`, dbErr.message);
+            failCount++;
+            continue;
+          }
+
+          successCount++;
+        }
+
+        console.log(`[illustrations] Done. ${successCount} succeeded, ${failCount} failed`);
+
+        await updateAudit(audit_id, {
+          progress_pct: 85,
+          current_step: `Illustrations generated (${successCount}/${dims.length})`,
+        });
+      } catch (err) {
+        // Non-fatal — frontend uses gradient placeholders if illustrations missing
+        console.warn('[illustrations] Step failed (non-fatal):', err);
+      }
     });
 
     // ---------------------------------------------------------------

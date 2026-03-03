@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
@@ -47,8 +48,18 @@ export function Navbar() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
-            <Link href="/" className="text-xl font-bold text-sylva-50">
-              Sylvia Ndunge
+            <Link href="/" className="flex items-center gap-2">
+              <Image
+                src="/images/generated/sn-logo-hex.png"
+                alt="SN"
+                width={36}
+                height={36}
+                className="rounded-sm"
+                priority
+              />
+              <span className="text-xl font-bold text-sylva-50">
+                Sylvia Ndunge
+              </span>
             </Link>
 
             {/* Desktop Links */}
@@ -98,7 +109,7 @@ export function Navbar() {
         }`}
       >
         <div className="flex items-center justify-between p-4 border-b border-border">
-          <span className="text-lg font-bold text-sylva-50">Menu</span>
+          <span className="text-lg font-bold text-sylva-100">Menu</span>
           <button
             onClick={() => setMobileOpen(false)}
             className="p-2 text-sylva-300 hover:text-sylva-50 rounded-lg transition-colors"

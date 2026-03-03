@@ -247,6 +247,106 @@ body {
 }
 
 /* ------------------------------------------------------------------ */
+/* Presentation slides (audit results)                                */
+/* ------------------------------------------------------------------ */
+
+.presentation-container {
+  scroll-snap-type: y proximity;
+}
+
+.dimension-slide {
+  scroll-snap-align: start;
+  min-height: 85vh;
+}
+
+/* ------------------------------------------------------------------ */
+/* Carousel (desktop horizontal slides)                               */
+/* ------------------------------------------------------------------ */
+
+.carousel-viewport {
+  position: relative;
+  overflow: hidden;
+  height: 85vh;
+}
+
+.carousel-track {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  will-change: transform;
+}
+
+.carousel-slide {
+  min-width: 100%;
+  flex-shrink: 0;
+  scroll-snap-align: unset;
+}
+
+/* Nav buttons */
+.carousel-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  backdrop-filter: blur(16px) saturate(180%);
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  color: var(--sylva-200);
+  cursor: pointer;
+  transition: transform 200ms ease, box-shadow 200ms ease, background 200ms ease;
+}
+
+.carousel-nav-btn:hover:not(:disabled) {
+  transform: translateY(-50%) translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.carousel-nav-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* Dot indicators */
+.carousel-dots {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.carousel-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: none;
+  background: var(--sylva-600);
+  cursor: pointer;
+  transition: transform 250ms ease, background-color 250ms ease, box-shadow 250ms ease;
+  padding: 0;
+}
+
+.carousel-dot:hover:not(:disabled) {
+  transform: scale(1.3);
+}
+
+.carousel-dot.active {
+  transform: scale(1.4);
+  cursor: default;
+}
+
+/* ------------------------------------------------------------------ */
 /* Reduced motion                                                     */
 /* ------------------------------------------------------------------ */
 

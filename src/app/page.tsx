@@ -42,7 +42,7 @@ export default function Home() {
       {/* ───── Hero Section ───── */}
       <section
         ref={heroRef}
-        className="relative overflow-hidden bg-gradient-to-br from-sylva-50 via-sylva-100 to-sylva-200"
+        className="relative overflow-hidden bg-gradient-to-br from-sylva-950 via-sylva-900 to-sylva-800"
       >
         {/* AI-generated hero background */}
         <Image
@@ -63,7 +63,7 @@ export default function Home() {
             </p>
             <h1
               data-hero-headline
-              className="text-4xl font-bold tracking-tight text-sylva-950 sm:text-5xl lg:text-6xl leading-[1.1]"
+              className="text-4xl font-bold tracking-tight text-sylva-50 sm:text-5xl lg:text-6xl leading-[1.1]"
             >
               Innovation Without a Narrative
               <br />
@@ -93,12 +93,12 @@ export default function Home() {
                   value={heroUrl}
                   onChange={(e) => setHeroUrl(e.target.value)}
                   placeholder="yourwebsite.com"
-                  className="block w-full rounded-lg border border-sylva-600 bg-sylva-950 pl-[4.5rem] pr-4 py-3.5 text-sylva-50 placeholder:text-sylva-500 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-sm"
+                  className="block w-full rounded-lg border border-sylva-700 bg-white pl-[4.5rem] pr-4 py-3.5 text-sylva-50 placeholder:text-sylva-500 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-sm shadow-sm"
                 />
               </div>
               <button
                 type="submit"
-                className="rounded-lg bg-amber-500 px-6 py-3.5 text-sm font-semibold text-sylva-950 transition-all hover:bg-amber-400 btn-lift whitespace-nowrap flex items-center justify-center gap-2"
+                className="rounded-lg bg-amber-500 px-6 py-3.5 text-sm font-semibold text-white transition-all hover:bg-amber-400 btn-lift whitespace-nowrap flex items-center justify-center gap-2"
               >
                 Audit My GTM
                 <ArrowRight size={16} />
@@ -119,7 +119,7 @@ export default function Home() {
           </div>
 
           {/* Headshot */}
-          <div className="hidden lg:block absolute right-8 bottom-0 xl:right-16">
+          <div className="hidden lg:block absolute right-8 top-1/2 -translate-y-1/2 xl:right-16">
             <div className="w-64 h-64 xl:w-80 xl:h-80 rounded-full overflow-hidden border-2 border-amber-500/20 shadow-lg float-gentle">
               <Image
                 src="/images/generated/headshot-placeholder.png"
@@ -149,7 +149,7 @@ export default function Home() {
       <LatestPosts />
 
       {/* ───── Final CTA ───── */}
-      <section className="relative bg-gradient-to-br from-sylva-50 via-sylva-100 to-sylva-200 py-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
+      <section className="relative bg-gradient-to-br from-sylva-950 via-sylva-900 to-sylva-800 py-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
         <Image
           src="/images/generated/cta-pattern.png"
           alt=""
@@ -157,7 +157,7 @@ export default function Home() {
           className="object-cover opacity-[0.06] pointer-events-none"
         />
         <div className="relative mx-auto max-w-3xl text-center">
-          <h2 className="text-3xl font-bold text-sylva-950">
+          <h2 className="text-3xl font-bold text-sylva-50">
             Your GTM has gaps. Let&apos;s find them.
           </h2>
           <p className="mt-4 text-sylva-400">
@@ -167,13 +167,13 @@ export default function Home() {
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/audit"
-              className="rounded-lg bg-amber-500 px-8 py-4 text-lg font-semibold text-sylva-950 transition-all hover:bg-amber-400 btn-lift"
+              className="rounded-lg bg-amber-500 px-8 py-4 text-lg font-semibold text-white transition-all hover:bg-amber-400 btn-lift"
             >
               Start Your Free Audit
             </Link>
             <Link
               href="/book"
-              className="rounded-lg border-2 border-sylva-600 px-8 py-4 text-lg font-semibold text-sylva-950 transition-all hover:border-sylva-50 hover:bg-sylva-950/5"
+              className="rounded-lg border-2 border-sylva-700 px-8 py-4 text-lg font-semibold text-sylva-50 transition-all hover:border-sylva-50 hover:bg-sylva-50/5"
             >
               Book a Strategy Call
             </Link>
