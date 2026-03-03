@@ -68,13 +68,16 @@ export function EmailGateModal({
         ))}
       </ul>
 
-      <form onSubmit={handleSubmit} className="mt-6 flex gap-3">
+      <form onSubmit={handleSubmit} className="mt-6 flex gap-3" aria-label="Unlock full report">
+        <label htmlFor="gate-email" className="sr-only">Email address</label>
         <input
+          id="gate-email"
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="your@email.com"
           required
+          aria-describedby={error ? "gate-error" : undefined}
           className="flex-1 rounded-lg border border-border px-4 py-3 text-foreground placeholder:text-muted-foreground focus:border-sylva-500 focus:outline-none focus:ring-2 focus:ring-sylva-500/20"
         />
         <button
@@ -87,7 +90,7 @@ export function EmailGateModal({
       </form>
 
       {error && (
-        <p className="mt-2 text-sm text-grade-f">{error}</p>
+        <p id="gate-error" role="alert" className="mt-2 text-sm text-grade-f">{error}</p>
       )}
 
       <p className="mt-3 text-xs text-muted-foreground">

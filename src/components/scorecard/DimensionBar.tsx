@@ -39,7 +39,14 @@ export function DimensionBar({
           </span>
         </div>
       </div>
-      <div className="h-2.5 rounded-full bg-sylva-800 overflow-hidden">
+      <div
+        className="h-2.5 rounded-full bg-sylva-800 overflow-hidden"
+        role="progressbar"
+        aria-valuenow={score}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label={`${label}: ${score} out of 100, grade ${grade}`}
+      >
         <div
           className="h-full rounded-full transition-all ease-out"
           style={{

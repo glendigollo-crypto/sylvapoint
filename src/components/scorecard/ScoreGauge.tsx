@@ -24,8 +24,17 @@ export function ScoreGauge({ score, grade, size = 200 }: ScoreGaugeProps) {
   const gradeColor = getGradeColor(grade);
 
   return (
-    <div ref={ref} className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
-      <svg width={size} height={size} className="-rotate-90">
+    <div
+      ref={ref}
+      className="relative inline-flex items-center justify-center"
+      style={{ width: size, height: size }}
+      role="meter"
+      aria-valuenow={score}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-label={`GTM score: ${score} out of 100, grade ${grade}`}
+    >
+      <svg width={size} height={size} className="-rotate-90" aria-hidden="true">
         {/* Background circle */}
         <circle
           cx={size / 2}
