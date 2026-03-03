@@ -38,8 +38,8 @@ ${context.metaDescription || "Not found"}
 ## Crawlable: ${context.isCrawlable ? "Yes" : "No"}
 ## Structured Data: ${context.hasStructuredData ? "Yes" : "No"}
 
-## Headline Structure
-${context.headlineStructure.join("\n")}
+## Headline Structure (top 25)
+${context.headlineStructure.slice(0, 25).join("\n")}
 
 ## Content (first 4000 chars)
 ${context.bodyContent.slice(0, 4000)}

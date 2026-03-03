@@ -29,11 +29,11 @@ export const COPY_USER_PROMPT = (context: {
 
   return `Analyze this ${context.businessType} company's${industryLine} copy targeting "${context.targetClients}".
 
-## Headlines Found
-${context.headlines.join("\n")}
+## Headlines Found (top 20)
+${context.headlines.slice(0, 20).join("\n")}
 
-## CTAs Found
-${context.ctas.join("\n")}
+## CTAs Found (top 15)
+${context.ctas.slice(0, 15).join("\n")}
 
 ## Body Copy (first 3000 chars)
 ${context.bodyContent.slice(0, 3000)}

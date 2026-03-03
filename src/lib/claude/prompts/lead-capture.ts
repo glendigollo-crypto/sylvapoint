@@ -31,8 +31,8 @@ export const LEAD_CAPTURE_USER_PROMPT = (context: {
 ## Forms Found
 ${context.forms.map((f, i) => `Form ${i + 1}: ${f.fields} fields, email: ${f.hasEmail}, submit: "${f.submitText}"`).join("\n") || "No forms found"}
 
-## CTAs
-${context.ctas.join("\n") || "No CTAs found"}
+## CTAs (top 15)
+${context.ctas.slice(0, 15).join("\n") || "No CTAs found"}
 
 ## Lead Magnet Detected: ${context.hasLeadMagnet ? "Yes" : "No"}
 ## Testimonials Count: ${context.testimonials}

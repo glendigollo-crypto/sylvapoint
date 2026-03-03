@@ -26,8 +26,8 @@ export const POSITIONING_USER_PROMPT = (context: {
 
   return `Analyze this ${context.businessType} company${industryLine} targeting "${context.targetClients}".
 
-## Homepage Headlines
-${context.headlines.join("\n")}
+## Homepage Headlines (top 20)
+${context.headlines.slice(0, 20).join("\n")}
 
 ## Homepage Body
 ${context.bodyContent.slice(0, 3000)}

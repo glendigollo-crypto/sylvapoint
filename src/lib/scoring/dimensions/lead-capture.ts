@@ -44,19 +44,8 @@ function detectLeadMagnet(extraction: ScorerInput['extraction']): boolean {
   return false;
 }
 
-/**
- * Extract JSON from a Claude response string, handling potential markdown fences.
- */
-function extractJson(raw: string): unknown {
-  const start = raw.indexOf('{');
-  const end = raw.lastIndexOf('}');
-  if (start !== -1 && end > start) {
-    let jsonStr = raw.slice(start, end + 1);
-    jsonStr = jsonStr.replace(/,\s*([}\]])/g, '$1');
-    return JSON.parse(jsonStr);
-  }
-  return JSON.parse(raw.trim());
-}
+// Use shared robust JSON parser
+import { extractJson } from '@/lib/scoring/json-repair';
 
 // ---------------------------------------------------------------------------
 // Fallback result when the Claude call fails
@@ -184,6 +173,13 @@ export async function scoreLeadCapture(
   } catch (err) {
     return buildFallbackResult(input, new Error(`Failed to parse Claude JSON response: ${(err as Error).message}`));
   }
+
+  // Validate required fields exist
+  if (!Array.isArray(parsed.sub_scores)) {
+    return buildFallbackResult(input, new Error('Claude response missing sub_scores array'));
+  }
+  parsed.findings = parsed.findings ?? [];
+  parsed.quick_wins = parsed.quick_wins ?? [];
 
   // ---- Map Claude sub_scores (0-10) to our format (0-100) ----
   const sub_scores = parsed.sub_scores.map((s) => {
