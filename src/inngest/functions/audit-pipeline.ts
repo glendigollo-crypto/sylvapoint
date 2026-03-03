@@ -198,35 +198,56 @@ export const auditPipeline = inngest.createFunction(
       visual: 'Visual & Creative',
     };
 
-    // Run each scorer in its own step (each gets a fresh 60s timeout)
+    // Helper: build a fallback result when a scorer fails entirely
+    function makeFallback(key: DimensionKey): DimensionScorerResult {
+      return {
+        dimension_key: key,
+        label: DIMENSION_LABELS[key],
+        raw_score: 50,
+        sub_scores: [],
+        summary_free: `${DIMENSION_LABELS[key]} analysis could not be completed. Score is a neutral baseline.`,
+        summary_gated: 'Detailed analysis unavailable. Please re-run the audit.',
+        findings: [],
+        quick_wins: [],
+      };
+    }
+
+    // Run each scorer in its own step (each gets a fresh 60s timeout).
+    // Wrap each in try-catch so one failing scorer doesn't crash the pipeline.
     const positioningResult = await step.run('score-positioning', async () => {
       await updateAudit(audit_id, { current_step: 'Scoring positioning & messaging...' });
-      return await scorePositioning(scorerInput);
+      try { return await scorePositioning(scorerInput); }
+      catch (e) { console.error('[score-positioning]', e); return makeFallback('positioning'); }
     });
 
     const copyResult = await step.run('score-copy', async () => {
       await updateAudit(audit_id, { progress_pct: 50, current_step: 'Scoring copy effectiveness...' });
-      return await scoreCopyEffectiveness(scorerInput);
+      try { return await scoreCopyEffectiveness(scorerInput); }
+      catch (e) { console.error('[score-copy]', e); return makeFallback('copy'); }
     });
 
     const seoResult = await step.run('score-seo', async () => {
       await updateAudit(audit_id, { progress_pct: 55, current_step: 'Scoring SEO & content...' });
-      return await scoreSeoContent(scorerInput);
+      try { return await scoreSeoContent(scorerInput); }
+      catch (e) { console.error('[score-seo]', e); return makeFallback('seo'); }
     });
 
     const leadResult = await step.run('score-lead-capture', async () => {
       await updateAudit(audit_id, { progress_pct: 60, current_step: 'Scoring lead capture...' });
-      return await scoreLeadCapture(scorerInput);
+      try { return await scoreLeadCapture(scorerInput); }
+      catch (e) { console.error('[score-lead-capture]', e); return makeFallback('lead_capture'); }
     });
 
     const perfResult = await step.run('score-performance', async () => {
       await updateAudit(audit_id, { progress_pct: 65, current_step: 'Scoring performance...' });
-      return await scorePerformance(scorerInput);
+      try { return await scorePerformance(scorerInput); }
+      catch (e) { console.error('[score-performance]', e); return makeFallback('performance'); }
     });
 
     const visualResult = await step.run('score-visual', async () => {
       await updateAudit(audit_id, { progress_pct: 70, current_step: 'Scoring visual & creative...' });
-      return await scoreVisualCreative(scorerInput);
+      try { return await scoreVisualCreative(scorerInput); }
+      catch (e) { console.error('[score-visual]', e); return makeFallback('visual'); }
     });
 
     // ---------------------------------------------------------------
@@ -248,46 +269,54 @@ export const auditPipeline = inngest.createFunction(
 
       for (const { key, result } of scorerResults) {
         const dimWeight = weights[key];
-        const subWeights = dimWeight.subWeights;
+        const subWeights = dimWeight?.subWeights ?? {};
+
+        // Defensive: ensure arrays exist (they may be undefined after Inngest serialization)
+        const subScoresArr = Array.isArray(result.sub_scores) ? result.sub_scores : [];
+        const findingsArr = Array.isArray(result.findings) ? result.findings : [];
+        const quickWinsArr = Array.isArray(result.quick_wins) ? result.quick_wins : [];
 
         // Apply sub-score weights
         let totalWeight = 0;
         let weightedSum = 0;
-        for (const sub of result.sub_scores) {
+        for (const sub of subScoresArr) {
           const w = subWeights[sub.key] ?? sub.weight;
           weightedSum += sub.score * w;
           totalWeight += w;
         }
-        const rawScore = totalWeight > 0 && Math.abs(totalWeight - 1) > 0.001
-          ? weightedSum / totalWeight
-          : weightedSum;
+        // If no sub-scores, use the raw_score from the scorer directly
+        const rawScore = subScoresArr.length === 0
+          ? (result.raw_score ?? 50)
+          : totalWeight > 0 && Math.abs(totalWeight - 1) > 0.001
+            ? weightedSum / totalWeight
+            : weightedSum;
 
         const grade = getGrade(rawScore) as Grade;
-        const weightedScore = Math.round(rawScore * dimWeight.weight * 100) / 100;
+        const weightedScore = Math.round(rawScore * (dimWeight?.weight ?? 1) * 100) / 100;
 
         const dim: DimensionScore = {
           dimension: key,
-          label: result.label,
+          label: result.label ?? DIMENSION_LABELS[key],
           score: Math.round(rawScore * 100) / 100,
           grade,
-          subScores: result.sub_scores.map((s) => ({
+          subScores: subScoresArr.map((s) => ({
             key: s.key,
             label: s.label,
             score: s.score,
             weight: subWeights[s.key] ?? s.weight,
             evidence: s.evidence,
-            evidenceQuotes: s.evidence_quotes,
+            evidenceQuotes: s.evidence_quotes ?? [],
           })),
-          summaryFree: result.summary_free,
-          summaryGated: result.summary_gated,
-          findings: result.findings.map((f) => ({
+          summaryFree: result.summary_free ?? 'Analysis unavailable.',
+          summaryGated: result.summary_gated ?? 'Detailed analysis unavailable.',
+          findings: findingsArr.map((f) => ({
             title: f.title,
             severity: f.severity,
             evidence: f.evidence,
             recommendation: f.recommendation,
             playbook_chapter: f.playbook_chapter ?? null,
           })),
-          quickWins: result.quick_wins.map((qw) => ({
+          quickWins: quickWinsArr.map((qw) => ({
             title: qw.title,
             description: qw.description,
             impact: qw.impact,
