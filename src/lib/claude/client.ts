@@ -40,9 +40,10 @@ export interface ClaudeResponse {
 const DEFAULT_MODEL: ClaudeModel = 'claude-haiku-4-5-20251001';
 const DEFAULT_MAX_TOKENS = 2048;
 const DEFAULT_TEMPERATURE = 0.3;
-const MAX_RETRIES = 1;
+/** No client-level retries — scorers have try-catch fallbacks, Inngest handles step retries. */
+const MAX_RETRIES = 0;
 /** Per-request timeout — must leave headroom within Vercel's 60s function limit. */
-const REQUEST_TIMEOUT_MS = 50_000;
+const REQUEST_TIMEOUT_MS = 55_000;
 
 /**
  * Pricing per million tokens (USD). Updated to reflect current rates.
