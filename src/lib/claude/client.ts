@@ -40,7 +40,9 @@ export interface ClaudeResponse {
 const DEFAULT_MODEL: ClaudeModel = 'claude-haiku-4-5-20251001';
 const DEFAULT_MAX_TOKENS = 2048;
 const DEFAULT_TEMPERATURE = 0.3;
-const MAX_RETRIES = 2;
+const MAX_RETRIES = 1;
+/** Per-request timeout — must leave headroom within Vercel's 60s function limit. */
+const REQUEST_TIMEOUT_MS = 50_000;
 
 /**
  * Pricing per million tokens (USD). Updated to reflect current rates.
@@ -76,7 +78,7 @@ function getClient(): Anthropic {
     );
   }
 
-  _client = new Anthropic({ apiKey });
+  _client = new Anthropic({ apiKey, timeout: REQUEST_TIMEOUT_MS });
   return _client;
 }
 
