@@ -48,8 +48,8 @@ function extractSocialLinks(html: string): string[] {
     regex.lastIndex = 0;
     let match: RegExpExecArray | null;
     while ((match = regex.exec(html)) !== null) {
-      // Clean trailing slashes
-      found.add(match[0].replace(/\/+$/, ''));
+      // Clean trailing slashes and backslashes
+      found.add(match[0].replace(/[\\/]+$/, ''));
     }
   }
   return [...found].slice(0, 10);
