@@ -5,14 +5,22 @@ import { nativeCrawl } from '@/lib/crawl/native';
 import { extractContent } from '@/lib/crawl/extractor';
 import { detectSocialLinks } from '@/lib/crawl/social';
 import { getPageSpeedScores } from '@/lib/lighthouse/pagespeed';
-import { runScoringEngine } from '@/lib/scoring/engine';
 import { getGrade } from '@/lib/scoring/grades';
 import { getWeightProfile } from '@/lib/scoring/weights';
+import type { WeightProfileMap } from '@/lib/scoring/weights';
 import { DEFAULT_TENANT_ID } from '@/lib/tenant';
-import type { CrawlExtraction } from '@/types/scoring';
-import type { PageSpeedResult } from '@/lib/scoring/types';
+import type { CrawlExtraction, DimensionKey, DimensionScore, Grade } from '@/types/scoring';
+import type { PageSpeedResult, ScorerInput, DimensionScorerResult } from '@/lib/scoring/types';
 import type { SocialData } from '@/lib/crawl/social';
 import type { BusinessType, TopGap } from '@/types/audit';
+
+// Individual dimension scorers (each runs in its own Inngest step)
+import { scorePositioning } from '@/lib/scoring/dimensions/positioning';
+import { scoreCopyEffectiveness } from '@/lib/scoring/dimensions/copy-effectiveness';
+import { scoreSeoContent } from '@/lib/scoring/dimensions/seo-content';
+import { scoreLeadCapture } from '@/lib/scoring/dimensions/lead-capture';
+import { scorePerformance } from '@/lib/scoring/dimensions/performance';
+import { scoreVisualCreative } from '@/lib/scoring/dimensions/visual-creative';
 
 interface AuditStartEvent {
   data: {
@@ -167,90 +175,198 @@ export const auditPipeline = inngest.createFunction(
     });
 
     // ---------------------------------------------------------------
-    // Step 5 — Run all 6 dimension scorers
+    // Step 5 — Run each dimension scorer as a separate Inngest step
+    //   Each step gets its own serverless function invocation (up to 60s)
+    //   so Claude API calls don't hit Vercel's function timeout.
     // ---------------------------------------------------------------
-    const scoringResult = await step.run('score-dimensions', async () => {
-      try {
-        const result = await runScoringEngine({
-          audit_id,
-          url,
-          business_type: business_type as BusinessType,
-          industry: industry || undefined,
-          target_clients,
-          extraction: crawlData.extraction,
-          pagespeed: crawlData.pagespeed as PageSpeedResult | undefined,
-        });
+    const scorerInput: ScorerInput = {
+      audit_id,
+      url,
+      business_type: business_type as BusinessType,
+      industry: industry || undefined,
+      target_clients,
+      extraction: crawlData.extraction,
+      pagespeed: crawlData.pagespeed as PageSpeedResult | undefined,
+    };
 
-        // Load weight profile for this business type
-        const weights = await getWeightProfile(business_type as BusinessType);
+    const DIMENSION_LABELS: Record<DimensionKey, string> = {
+      positioning: 'Positioning & Messaging',
+      copy: 'Copy Effectiveness',
+      seo: 'SEO & Content Quality',
+      lead_capture: 'Lead Capture',
+      performance: 'Website Performance',
+      visual: 'Visual & Creative',
+    };
 
-        // Store dimension scores in DB
-        for (const dim of result.dimensions) {
-          const dimWeight = weights[dim.dimension]?.weight ?? 1;
-          const weightedScore = Math.round(dim.score * dimWeight * 100) / 100;
+    // Run each scorer in its own step (each gets a fresh 60s timeout)
+    const positioningResult = await step.run('score-positioning', async () => {
+      await updateAudit(audit_id, { current_step: 'Scoring positioning & messaging...' });
+      return await scorePositioning(scorerInput);
+    });
 
-          const { data: dimRow } = await getAdminSupabase()
-            .from('dimension_scores')
-            .insert({
+    const copyResult = await step.run('score-copy', async () => {
+      await updateAudit(audit_id, { progress_pct: 50, current_step: 'Scoring copy effectiveness...' });
+      return await scoreCopyEffectiveness(scorerInput);
+    });
+
+    const seoResult = await step.run('score-seo', async () => {
+      await updateAudit(audit_id, { progress_pct: 55, current_step: 'Scoring SEO & content...' });
+      return await scoreSeoContent(scorerInput);
+    });
+
+    const leadResult = await step.run('score-lead-capture', async () => {
+      await updateAudit(audit_id, { progress_pct: 60, current_step: 'Scoring lead capture...' });
+      return await scoreLeadCapture(scorerInput);
+    });
+
+    const perfResult = await step.run('score-performance', async () => {
+      await updateAudit(audit_id, { progress_pct: 65, current_step: 'Scoring performance...' });
+      return await scorePerformance(scorerInput);
+    });
+
+    const visualResult = await step.run('score-visual', async () => {
+      await updateAudit(audit_id, { progress_pct: 70, current_step: 'Scoring visual & creative...' });
+      return await scoreVisualCreative(scorerInput);
+    });
+
+    // ---------------------------------------------------------------
+    // Step 5b — Aggregate scores & store in DB
+    // ---------------------------------------------------------------
+    const scoringResult = await step.run('aggregate-scores', async () => {
+      const weights = await getWeightProfile(business_type as BusinessType);
+
+      const scorerResults: { key: DimensionKey; result: DimensionScorerResult }[] = [
+        { key: 'positioning', result: positioningResult },
+        { key: 'copy', result: copyResult },
+        { key: 'seo', result: seoResult },
+        { key: 'lead_capture', result: leadResult },
+        { key: 'performance', result: perfResult },
+        { key: 'visual', result: visualResult },
+      ];
+
+      const dimensions: DimensionScore[] = [];
+
+      for (const { key, result } of scorerResults) {
+        const dimWeight = weights[key];
+        const subWeights = dimWeight.subWeights;
+
+        // Apply sub-score weights
+        let totalWeight = 0;
+        let weightedSum = 0;
+        for (const sub of result.sub_scores) {
+          const w = subWeights[sub.key] ?? sub.weight;
+          weightedSum += sub.score * w;
+          totalWeight += w;
+        }
+        const rawScore = totalWeight > 0 && Math.abs(totalWeight - 1) > 0.001
+          ? weightedSum / totalWeight
+          : weightedSum;
+
+        const grade = getGrade(rawScore) as Grade;
+        const weightedScore = Math.round(rawScore * dimWeight.weight * 100) / 100;
+
+        const dim: DimensionScore = {
+          dimension: key,
+          label: result.label,
+          score: Math.round(rawScore * 100) / 100,
+          grade,
+          subScores: result.sub_scores.map((s) => ({
+            key: s.key,
+            label: s.label,
+            score: s.score,
+            weight: subWeights[s.key] ?? s.weight,
+            evidence: s.evidence,
+            evidenceQuotes: s.evidence_quotes,
+          })),
+          summaryFree: result.summary_free,
+          summaryGated: result.summary_gated,
+          findings: result.findings.map((f) => ({
+            title: f.title,
+            severity: f.severity,
+            evidence: f.evidence,
+            recommendation: f.recommendation,
+            playbook_chapter: f.playbook_chapter ?? null,
+          })),
+          quickWins: result.quick_wins.map((qw) => ({
+            title: qw.title,
+            description: qw.description,
+            impact: qw.impact,
+            effort: qw.effort,
+            dimension_key: key,
+          })),
+        };
+
+        dimensions.push(dim);
+
+        // Store in DB
+        const { data: dimRow } = await getAdminSupabase()
+          .from('dimension_scores')
+          .insert({
+            tenant_id: DEFAULT_TENANT_ID,
+            audit_id,
+            dimension_key: key,
+            label: result.label,
+            raw_score: dim.score,
+            weighted_score: weightedScore,
+            grade,
+            summary_free: result.summary_free,
+            summary_gated: result.summary_gated,
+            findings: dim.findings,
+            quick_wins: dim.quickWins,
+          })
+          .select('id')
+          .single();
+
+        if (dimRow) {
+          for (const sub of dim.subScores) {
+            await getAdminSupabase().from('sub_scores').insert({
               tenant_id: DEFAULT_TENANT_ID,
+              dimension_score_id: dimRow.id,
               audit_id,
-              dimension_key: dim.dimension,
-              label: dim.label,
-              raw_score: dim.score,
-              weighted_score: weightedScore,
-              grade: dim.grade,
-              summary_free: dim.summaryFree,
-              summary_gated: dim.summaryGated,
-              findings: dim.findings,
-              quick_wins: dim.quickWins,
-            })
-            .select('id')
-            .single();
-
-          // Store sub-scores
-          if (dimRow) {
-            for (const sub of dim.subScores) {
-              await getAdminSupabase().from('sub_scores').insert({
-                tenant_id: DEFAULT_TENANT_ID,
-                dimension_score_id: dimRow.id,
-                audit_id,
-                sub_score_key: sub.key,
-                label: sub.label,
-                score: sub.score,
-                weight_within_dimension: sub.weight,
-                evidence: sub.evidence,
-                evidence_quotes: sub.evidenceQuotes,
-              });
-            }
+              sub_score_key: sub.key,
+              label: sub.label,
+              score: sub.score,
+              weight_within_dimension: sub.weight,
+              evidence: sub.evidence,
+              evidence_quotes: sub.evidenceQuotes,
+            });
           }
         }
-
-        await updateAudit(audit_id, {
-          progress_pct: 80,
-          current_step: 'Dimensions scored, computing results...',
-        });
-
-        return result;
-      } catch (scoringError) {
-        console.error('[audit-pipeline] Scoring engine failed, using fallback:', scoringError);
-
-        // Return a generic fallback score so the pipeline can still complete
-        const fallbackScore = 30;
-
-        await updateAudit(audit_id, {
-          progress_pct: 80,
-          current_step: 'Scoring completed with limited data...',
-          error_message: 'Scoring engine encountered an error. Results are approximate.',
-        });
-
-        return {
-          audit_id,
-          composite_score: fallbackScore,
-          composite_grade: 'F' as const,
-          dimensions: [],
-          top_gaps: [] as TopGap[],
-        };
       }
+
+      // Compute composite score
+      let compositeScore = 0;
+      for (const dim of dimensions) {
+        const dw = weights[dim.dimension]?.weight ?? 0;
+        compositeScore += dim.score * dw;
+      }
+      compositeScore = Math.round(compositeScore * 100) / 100;
+      const compositeGrade = getGrade(compositeScore) as Grade;
+
+      // Identify top 3 gaps
+      const sortedByScore = [...dimensions].sort((a, b) => a.score - b.score);
+      const topGaps: TopGap[] = sortedByScore.slice(0, 3).map((dim) => ({
+        dimension_key: dim.dimension,
+        label: dim.label,
+        score: dim.score,
+        grade: dim.grade,
+        quick_win: dim.quickWins.length > 0
+          ? dim.quickWins[0].title
+          : 'Review this dimension for improvement opportunities.',
+      }));
+
+      await updateAudit(audit_id, {
+        progress_pct: 80,
+        current_step: 'Dimensions scored, computing results...',
+      });
+
+      return {
+        audit_id,
+        composite_score: compositeScore,
+        composite_grade: compositeGrade,
+        dimensions,
+        top_gaps: topGaps,
+      };
     });
 
     // ---------------------------------------------------------------
