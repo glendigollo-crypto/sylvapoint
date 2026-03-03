@@ -51,7 +51,7 @@ export const auditPipeline = inngest.createFunction(
   {
     id: 'audit-pipeline',
     name: 'GTM Audit Pipeline',
-    retries: 2,
+    retries: 1,
     onFailure: async ({ error, event }) => {
       try {
         const eventData = (event?.data as Record<string, unknown>)?.event as Record<string, unknown> | undefined;
