@@ -183,10 +183,11 @@ export async function getWeightProfile(
       .eq('business_type', businessType);
 
     if (tenantId) {
-      // Prefer tenant-specific override; fall back to global
-      query = query.or(`tenant_id.eq.${tenantId},tenant_id.is.null`);
+      // Prefer tenant-specific override; fall back to default tenant
+      query = query.or(`tenant_id.eq.${tenantId},tenant_id.eq.00000000-0000-0000-0000-000000000001`);
     } else {
-      query = query.is('tenant_id', null);
+      // Use the default tenant's weight profiles
+      query = query.eq('tenant_id', '00000000-0000-0000-0000-000000000001');
     }
 
     const { data, error } = await query;

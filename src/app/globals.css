@@ -174,6 +174,79 @@ body {
 }
 
 /* ------------------------------------------------------------------ */
+/* Radar loading animations                                           */
+/* ------------------------------------------------------------------ */
+
+/* Conic gradient sweep beam — rotated by Framer Motion */
+.radar-sweep-beam {
+  background: conic-gradient(
+    from 0deg at 50% 50%,
+    transparent 0deg,
+    rgba(255, 77, 77, 0.18) 15deg,
+    rgba(255, 77, 77, 0.08) 40deg,
+    rgba(255, 77, 77, 0.02) 70deg,
+    transparent 90deg,
+    transparent 360deg
+  );
+}
+
+/* Vertex ping — expanding ring that fades out */
+@keyframes radar-ping-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+.radar-ping {
+  animation: radar-ping-ring 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* Active step dot — slower, breathing ping */
+@keyframes dot-ping {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+.radar-dot-ping {
+  animation: dot-ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* Character wave / "flag" animation — each char bounces with accent flash */
+@keyframes flag-wave {
+  0%, 100% {
+    transform: translateY(0);
+    color: inherit;
+  }
+  40% {
+    transform: translateY(-2px);
+    color: var(--amber-500);
+  }
+  60% {
+    transform: translateY(-1px);
+    color: var(--amber-400);
+  }
+}
+
+.flag-char {
+  animation: flag-wave 2s ease-in-out infinite;
+  display: inline-block;
+  will-change: transform;
+}
+
+/* ------------------------------------------------------------------ */
 /* Reduced motion                                                     */
 /* ------------------------------------------------------------------ */
 

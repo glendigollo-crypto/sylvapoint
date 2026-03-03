@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { getAdminSupabase } from '@/lib/supabase/admin';
 import { sendAuditReport, scheduleNurtureSequence } from '@/lib/email/resend';
 import { getTenantId } from '@/lib/tenant';
+import { inngest } from '@/inngest/client';
 
 // ---------------------------------------------------------------------------
 // Validation schema
@@ -70,7 +71,7 @@ export async function POST(
     // --- Fetch the audit ----------------------------------------------------
     const { data: audit, error: auditError } = await supabase
       .from('audits')
-      .select('id, status, tier_unlocked, share_slug, composite_score, url, business_type')
+      .select('id, status, tier_unlocked, share_slug, composite_score, url, business_type, industry, target_clients')
       .eq('share_slug', slug)
       .single();
 
@@ -180,6 +181,20 @@ export async function POST(
       auditId: slug,
     }).catch((err) => {
       console.error('[audit/unlock] Failed to schedule nurture:', err);
+    });
+
+    // --- Trigger deep analysis pipeline (fire-and-forget) -----------------
+    inngest.send({
+      name: 'audit/deep-analysis',
+      data: {
+        audit_id: audit.id,
+        url: audit.url,
+        business_type: audit.business_type,
+        industry: audit.industry ?? '',
+        target_clients: audit.target_clients ?? '',
+      },
+    }).catch((err) => {
+      console.error('[audit/unlock] Failed to trigger deep analysis:', err);
     });
 
     // --- Return the full (gated) audit data ---------------------------------

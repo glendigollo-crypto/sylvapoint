@@ -130,8 +130,9 @@ export async function scoreSeoContent(
   const { extraction, business_type, pagespeed } = input;
 
   // ---- Build prompt context ----
+  // pagespeed.seo is already 0-100 (converted by toScore100 in pagespeed.ts)
   const technicalSeoScore = pagespeed
-    ? Math.round(pagespeed.seo * 100)
+    ? Math.round(pagespeed.seo)
     : 50;
 
   const bodyContent = buildBodyContent(extraction);

@@ -358,8 +358,10 @@ export const auditPipeline = inngest.createFunction(
 
         dimensions.push(dim);
 
+        console.log(`[aggregate] ${key}: rawScore=${rawScore.toFixed(2)}, dimScore=${dim.score}, weight=${dimWeight?.weight}, subs=${subScoresArr.length}, totalW=${totalWeight.toFixed(3)}`);
+
         // Store in DB
-        const { data: dimRow } = await getAdminSupabase()
+        const { data: dimRow, error: dimInsertError } = await getAdminSupabase()
           .from('dimension_scores')
           .insert({
             tenant_id: DEFAULT_TENANT_ID,
@@ -376,6 +378,10 @@ export const auditPipeline = inngest.createFunction(
           })
           .select('id')
           .single();
+
+        if (dimInsertError) {
+          console.error(`[aggregate] Failed to insert dimension_scores for ${key}:`, dimInsertError.message);
+        }
 
         if (dimRow) {
           for (const sub of dim.subScores) {
@@ -398,9 +404,12 @@ export const auditPipeline = inngest.createFunction(
       let compositeScore = 0;
       for (const dim of dimensions) {
         const dw = weights[dim.dimension]?.weight ?? 0;
+        console.log(`[composite] ${dim.dimension}: score=${dim.score} * weight=${dw} = ${(dim.score * dw).toFixed(2)}`);
         compositeScore += dim.score * dw;
       }
+      console.log(`[composite] Raw total: ${compositeScore.toFixed(4)}`);
       compositeScore = Math.round(compositeScore * 100) / 100;
+      console.log(`[composite] Final: ${compositeScore}`);
       const compositeGrade = getGrade(compositeScore) as Grade;
 
       // Identify top 3 gaps
