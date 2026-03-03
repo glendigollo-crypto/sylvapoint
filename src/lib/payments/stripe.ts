@@ -233,21 +233,22 @@ async function handleCheckoutCompleted(
     console.error('[stripe] Failed to update audit tier:', auditError.message);
   }
 
-  // Record the purchase
-  const { error: purchaseError } = await supabaseAdmin.from('purchases').insert({
+  // Record the payment
+  const { error: paymentError } = await supabaseAdmin.from('payments').insert({
+    tenant_id: '00000000-0000-0000-0000-000000000001',
     audit_id: auditId,
     lead_id: leadId ?? null,
+    provider: 'stripe',
     stripe_session_id: session.id,
     stripe_payment_intent: session.payment_intent as string | null,
     product_type: productType ?? 'playbook_basic',
-    amount_cents: session.amount_total ?? 0,
+    amount: (session.amount_total ?? 0) / 100,
     currency: session.currency ?? 'usd',
     status: 'completed',
-    created_at: new Date().toISOString(),
   });
 
-  if (purchaseError) {
-    console.error('[stripe] Failed to record purchase:', purchaseError.message);
+  if (paymentError) {
+    console.error('[stripe] Failed to record payment:', paymentError.message);
   }
 
   console.log(
@@ -265,18 +266,31 @@ async function handlePaymentFailed(
       `reason=${paymentIntent.last_payment_error?.message ?? 'unknown'}`,
   );
 
-  // Record the failure for analytics
+  // Record the failure
   if (auditId) {
-    await supabaseAdmin.from('purchases').insert({
+    await supabaseAdmin.from('payments').insert({
+      tenant_id: '00000000-0000-0000-0000-000000000001',
       audit_id: auditId,
       lead_id: paymentIntent.metadata?.lead_id ?? null,
+      provider: 'stripe',
       stripe_payment_intent: paymentIntent.id,
       product_type: (paymentIntent.metadata?.product_type as ProductType) ?? 'playbook_basic',
-      amount_cents: paymentIntent.amount ?? 0,
+      amount: (paymentIntent.amount ?? 0) / 100,
       currency: paymentIntent.currency ?? 'usd',
       status: 'failed',
-      error_message: paymentIntent.last_payment_error?.message ?? null,
-      created_at: new Date().toISOString(),
+    });
+
+    // Log error details in analytics
+    await supabaseAdmin.from('analytics_events').insert({
+      tenant_id: '00000000-0000-0000-0000-000000000001',
+      event_type: 'payment_failed',
+      audit_id: auditId,
+      lead_id: paymentIntent.metadata?.lead_id ?? null,
+      properties: {
+        provider: 'stripe',
+        payment_intent: paymentIntent.id,
+        error_message: paymentIntent.last_payment_error?.message ?? null,
+      },
     });
   }
 }
@@ -293,17 +307,17 @@ async function handleChargeRefunded(charge: Stripe.Charge): Promise<void> {
     return;
   }
 
-  // Look up the purchase by payment intent ID
-  const { data: purchase } = await supabaseAdmin
-    .from('purchases')
+  // Look up the payment by payment intent ID
+  const { data: payment } = await supabaseAdmin
+    .from('payments')
     .select('audit_id')
     .eq('stripe_payment_intent', paymentIntentId)
     .eq('status', 'completed')
     .single();
 
-  if (!purchase) {
+  if (!payment) {
     console.warn(
-      `[stripe] No completed purchase found for pi=${paymentIntentId}`,
+      `[stripe] No completed payment found for pi=${paymentIntentId}`,
     );
     return;
   }
@@ -315,19 +329,19 @@ async function handleChargeRefunded(charge: Stripe.Charge): Promise<void> {
       tier_unlocked: 'gated',
       updated_at: new Date().toISOString(),
     })
-    .eq('id', purchase.audit_id);
+    .eq('id', payment.audit_id);
 
   if (error) {
     console.error('[stripe] Failed to revert audit tier:', error.message);
   }
 
-  // Update purchase status
+  // Update payment status
   await supabaseAdmin
-    .from('purchases')
+    .from('payments')
     .update({ status: 'refunded' })
     .eq('stripe_payment_intent', paymentIntentId);
 
   console.log(
-    `[stripe] Charge refunded: audit=${purchase.audit_id}, pi=${paymentIntentId}`,
+    `[stripe] Charge refunded: audit=${payment.audit_id}, pi=${paymentIntentId}`,
   );
 }

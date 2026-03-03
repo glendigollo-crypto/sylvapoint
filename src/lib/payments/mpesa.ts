@@ -265,15 +265,30 @@ export async function initiateSTKPush(
   }
 
   // Record the pending payment
-  await supabaseAdmin.from('mpesa_payments').insert({
-    checkout_request_id: data.CheckoutRequestID,
-    merchant_request_id: data.MerchantRequestID,
+  const { data: paymentRow } = await supabaseAdmin.from('payments').insert({
+    tenant_id: '00000000-0000-0000-0000-000000000001',
     audit_id: params.auditId,
     lead_id: params.leadId,
-    phone,
+    provider: 'mpesa',
+    product_type: 'playbook_basic',
+    mpesa_checkout_request_id: data.CheckoutRequestID,
     amount: Math.round(params.amount),
+    currency: 'KES',
     status: 'pending',
-    created_at: new Date().toISOString(),
+  }).select('id').single();
+
+  // Log M-Pesa-specific metadata in analytics
+  await supabaseAdmin.from('analytics_events').insert({
+    tenant_id: '00000000-0000-0000-0000-000000000001',
+    event_type: 'mpesa_stk_push_initiated',
+    audit_id: params.auditId,
+    lead_id: params.leadId,
+    properties: {
+      checkout_request_id: data.CheckoutRequestID,
+      merchant_request_id: data.MerchantRequestID,
+      phone,
+      payment_id: paymentRow?.id ?? null,
+    },
   });
 
   return {
@@ -312,9 +327,9 @@ export async function handleCallback(body: unknown): Promise<void> {
 
   // Look up the pending payment
   const { data: payment, error: lookupError } = await supabaseAdmin
-    .from('mpesa_payments')
-    .select('audit_id, lead_id')
-    .eq('checkout_request_id', CheckoutRequestID)
+    .from('payments')
+    .select('id, audit_id, lead_id')
+    .eq('mpesa_checkout_request_id', CheckoutRequestID)
     .single();
 
   if (lookupError || !payment) {
@@ -331,14 +346,12 @@ export async function handleCallback(body: unknown): Promise<void> {
 
     // Update payment record
     await supabaseAdmin
-      .from('mpesa_payments')
+      .from('payments')
       .update({
         status: 'completed',
         mpesa_receipt_number: metadata.receiptNumber ?? null,
-        transaction_date: metadata.transactionDate ?? null,
-        updated_at: new Date().toISOString(),
       })
-      .eq('checkout_request_id', CheckoutRequestID);
+      .eq('mpesa_checkout_request_id', CheckoutRequestID);
 
     // Unlock paid tier on the audit
     await supabaseAdmin
@@ -349,19 +362,43 @@ export async function handleCallback(body: unknown): Promise<void> {
       })
       .eq('id', payment.audit_id);
 
+    // Log M-Pesa callback details in analytics
+    await supabaseAdmin.from('analytics_events').insert({
+      tenant_id: '00000000-0000-0000-0000-000000000001',
+      event_type: 'mpesa_payment_completed',
+      audit_id: payment.audit_id,
+      lead_id: payment.lead_id,
+      properties: {
+        checkout_request_id: CheckoutRequestID,
+        receipt_number: metadata.receiptNumber ?? null,
+        transaction_date: metadata.transactionDate ?? null,
+        phone: metadata.phoneNumber ?? null,
+      },
+    });
+
     console.log(
       `[mpesa] Payment completed: audit=${payment.audit_id}, receipt=${metadata.receiptNumber}`,
     );
   } else {
     // Payment failed or was cancelled
     await supabaseAdmin
-      .from('mpesa_payments')
+      .from('payments')
       .update({
         status: 'failed',
-        error_message: ResultDesc,
-        updated_at: new Date().toISOString(),
       })
-      .eq('checkout_request_id', CheckoutRequestID);
+      .eq('mpesa_checkout_request_id', CheckoutRequestID);
+
+    // Log failure details in analytics
+    await supabaseAdmin.from('analytics_events').insert({
+      tenant_id: '00000000-0000-0000-0000-000000000001',
+      event_type: 'mpesa_payment_failed',
+      audit_id: payment.audit_id,
+      lead_id: payment.lead_id,
+      properties: {
+        checkout_request_id: CheckoutRequestID,
+        error_message: ResultDesc,
+      },
+    });
 
     console.warn(
       `[mpesa] Payment failed: audit=${payment.audit_id}, reason=${ResultDesc}`,

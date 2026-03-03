@@ -105,7 +105,7 @@ CREATE TABLE leads (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_leads_email ON leads(email) WHERE email IS NOT NULL;
+CREATE UNIQUE INDEX idx_leads_email ON leads(email) WHERE email IS NOT NULL;
 CREATE INDEX idx_leads_tenant ON leads(tenant_id);
 
 -- ==========================================
@@ -434,3 +434,17 @@ CREATE TRIGGER update_payments_updated_at
 CREATE TRIGGER update_admin_users_updated_at
   BEFORE UPDATE ON admin_users
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+-- ==========================================
+-- 13. ADMIN LOGIN ATTEMPTS (brute-force protection)
+-- ==========================================
+
+CREATE TABLE admin_login_attempts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  identifier TEXT NOT NULL,
+  success BOOLEAN NOT NULL DEFAULT false,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_admin_login_attempts_identifier ON admin_login_attempts(identifier, created_at);
+ALTER TABLE admin_login_attempts ENABLE ROW LEVEL SECURITY;
