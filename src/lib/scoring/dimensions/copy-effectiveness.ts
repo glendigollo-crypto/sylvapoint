@@ -4,6 +4,7 @@
 // ---------------------------------------------------------------------------
 
 import type { ScorerInput, DimensionScorerResult } from '../types';
+import { buildCompetitorPromptSection } from '../types';
 import { callClaude } from '@/lib/claude/client';
 import {
   COPY_SYSTEM_PROMPT,
@@ -127,7 +128,7 @@ export async function scoreCopyEffectiveness(
   const headlines = extraction.headlines.map((h) => `H${h.level}: ${h.text}`);
   const ctas = extraction.ctas;
 
-  const userPrompt = COPY_USER_PROMPT({
+  let userPrompt = COPY_USER_PROMPT({
     businessType: business_type,
     industry: input.industry,
     targetClients: target_clients,
@@ -137,6 +138,11 @@ export async function scoreCopyEffectiveness(
     aiTellScore: aiTellResult.score,
     aiTellFlags,
   });
+
+  // Append competitor context if available
+  if (input.competitor) {
+    userPrompt += buildCompetitorPromptSection(input.competitor);
+  }
 
   // ---- Call Claude (Sonnet for deeper analysis) ----
   let response;

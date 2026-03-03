@@ -113,8 +113,8 @@ export function RadarChart({ dimensions, size = 400 }: RadarChartProps) {
             x2="100%"
             y2="100%"
           >
-            <stop offset="0%" stopColor="rgba(245,158,11,0.25)" />
-            <stop offset="100%" stopColor="rgba(245,158,11,0.08)" />
+            <stop offset="0%" stopColor="rgba(255,77,77,0.20)" />
+            <stop offset="100%" stopColor="rgba(255,77,77,0.06)" />
           </linearGradient>
         </defs>
 

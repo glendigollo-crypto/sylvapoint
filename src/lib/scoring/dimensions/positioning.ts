@@ -4,6 +4,7 @@
 // ---------------------------------------------------------------------------
 
 import type { ScorerInput, DimensionScorerResult } from '../types';
+import { buildCompetitorPromptSection } from '../types';
 import { callClaude } from '@/lib/claude/client';
 import {
   POSITIONING_SYSTEM_PROMPT,
@@ -158,7 +159,7 @@ export async function scorePositioning(
   }
   const aboutContent = aboutParts.join('\n');
 
-  const userPrompt = POSITIONING_USER_PROMPT({
+  let userPrompt = POSITIONING_USER_PROMPT({
     businessType: business_type,
     industry: input.industry,
     targetClients: target_clients,
@@ -167,6 +168,11 @@ export async function scorePositioning(
     aboutContent,
     pricingContent,
   });
+
+  // Append competitor context if available
+  if (input.competitor) {
+    userPrompt += buildCompetitorPromptSection(input.competitor);
+  }
 
   // ---- Call Claude (Sonnet for deeper analysis) ----
   let response;

@@ -214,51 +214,42 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     .map((line) => {
       const trimmed = line.trim();
       if (trimmed.startsWith("### "))
-        return `<h3 class="text-lg font-bold text-white mt-8 mb-3">${trimmed.slice(4)}</h3>`;
+        return `<h3 class="text-lg font-bold text-sylva-50 mt-8 mb-3">${trimmed.slice(4)}</h3>`;
       if (trimmed.startsWith("## "))
-        return `<h2 class="text-xl font-bold text-white mt-10 mb-4">${trimmed.slice(3)}</h2>`;
+        return `<h2 class="text-xl font-bold text-sylva-50 mt-10 mb-4">${trimmed.slice(3)}</h2>`;
       if (trimmed.startsWith("- "))
         return `<li class="text-sylva-300 ml-4">${trimmed
           .slice(2)
-          .replace(/\*\*(.*?)\*\*/g, '<strong class="text-white">$1</strong>')}</li>`;
+          .replace(/\*\*(.*?)\*\*/g, '<strong class="text-sylva-50">$1</strong>')}</li>`;
       if (trimmed.length === 0) return "";
       return `<p class="text-sylva-300 mb-4 leading-relaxed">${trimmed.replace(
         /\*\*(.*?)\*\*/g,
-        '<strong class="text-white">$1</strong>'
+        '<strong class="text-sylva-50">$1</strong>'
       )}</p>`;
     })
     .join("\n");
 
   return (
-    <div className="min-h-screen bg-sylva-950">
-      {/* Header */}
-      <div className="bg-gradient-to-b from-sylva-950 to-sylva-900 px-4 py-8">
-        <div className="mx-auto max-w-3xl">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="text-lg font-bold text-white">
-              SylvaPoint
-            </Link>
-            <Link
-              href="/blog"
-              className="text-sm text-sylva-400 hover:text-white"
-            >
-              All Posts
-            </Link>
-          </div>
-        </div>
-      </div>
-
+    <div className="min-h-screen bg-white">
       {/* Article */}
       <article className="px-4 py-12">
         <div className="mx-auto max-w-3xl">
+          <div className="mb-2">
+            <Link
+              href="/blog"
+              className="text-sm text-amber-500 hover:text-amber-400 transition-colors"
+            >
+              &larr; All Posts
+            </Link>
+          </div>
           <div className="mb-8">
             <div className="flex items-center gap-3 mb-3">
-              <span className="text-xs font-semibold text-amber-400 uppercase tracking-wider">
+              <span className="text-xs font-semibold text-amber-500 uppercase tracking-wider">
                 {post.category}
               </span>
-              <span className="text-xs text-sylva-600">{post.date}</span>
+              <span className="text-xs text-muted-foreground">{post.date}</span>
             </div>
-            <h1 className="text-3xl font-bold text-white">{post.title}</h1>
+            <h1 className="text-3xl font-bold text-sylva-50">{post.title}</h1>
           </div>
 
           <div
@@ -266,12 +257,25 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             dangerouslySetInnerHTML={{ __html: htmlContent }}
           />
 
+          {/* Author Bio */}
+          <div className="mt-12 flex items-center gap-4 rounded-xl border border-border bg-sylva-900 p-6">
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center text-white font-bold text-lg shrink-0">
+              SN
+            </div>
+            <div>
+              <p className="font-semibold text-sylva-50">Sylvia Ndunge</p>
+              <p className="text-sm text-muted-foreground">
+                Go-to-Market Architect for Web3, Fintech, and Greentech pioneers.
+              </p>
+            </div>
+          </div>
+
           {/* CTA */}
-          <div className="mt-12 rounded-xl border border-sylva-700 bg-sylva-900/50 p-8 text-center">
-            <h2 className="text-xl font-bold text-white mb-2">
+          <div className="mt-8 rounded-xl border border-border bg-sylva-900 p-8 text-center">
+            <h2 className="text-xl font-bold text-sylva-50 mb-2">
               Ready to see your score?
             </h2>
-            <p className="text-sylva-400 mb-4">
+            <p className="text-muted-foreground mb-4">
               Get a free GTM audit in 60 seconds.
             </p>
             <Link
@@ -283,17 +287,6 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           </div>
         </div>
       </article>
-
-      {/* Footer */}
-      <footer className="border-t border-sylva-800 py-8 px-4 text-center text-sm text-sylva-600">
-        <p>
-          Powered by{" "}
-          <Link href="/" className="text-sylva-400 hover:text-white">
-            SylvaPoint
-          </Link>{" "}
-          — The GTM-6 Framework
-        </p>
-      </footer>
     </div>
   );
 }

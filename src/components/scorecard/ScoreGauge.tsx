@@ -127,7 +127,7 @@ export function ScoreGauge({ score, grade, size = 220 }: ScoreGaugeProps) {
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span
           ref={numberRef}
-          className="font-score text-5xl font-bold text-white leading-none"
+          className="font-score text-5xl font-bold text-sylva-50 leading-none"
         >
           0
         </span>

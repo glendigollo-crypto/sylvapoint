@@ -4,6 +4,7 @@
 // ---------------------------------------------------------------------------
 
 import type { ScorerInput, DimensionScorerResult } from '../types';
+import { buildCompetitorPromptSection } from '../types';
 import { callClaude } from '@/lib/claude/client';
 import {
   VISUAL_SYSTEM_PROMPT,
@@ -118,7 +119,7 @@ export async function scoreVisualCreative(
   const videoSources = extraction.videos.map((v) => v.platform);
   const bodyContent = buildBodyContent(extraction);
 
-  const userPrompt = VISUAL_USER_PROMPT({
+  let userPrompt = VISUAL_USER_PROMPT({
     businessType: business_type,
     industry: input.industry,
     imageCount,
@@ -129,6 +130,11 @@ export async function scoreVisualCreative(
     videoSources,
     bodyContent,
   });
+
+  // Append competitor context if available
+  if (input.competitor) {
+    userPrompt += buildCompetitorPromptSection(input.competitor);
+  }
 
   // ---- Call Claude (Sonnet for deeper creative analysis) ----
   let response;

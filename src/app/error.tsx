@@ -26,7 +26,7 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
             />
           </svg>
         </div>
-        <h1 className="mt-6 text-2xl font-bold text-white">
+        <h1 className="mt-6 text-2xl font-bold text-sylva-50">
           Something went wrong
         </h1>
         <p className="mt-3 text-sylva-300">

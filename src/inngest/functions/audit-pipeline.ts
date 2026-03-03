@@ -12,6 +12,8 @@ import { DEFAULT_TENANT_ID } from '@/lib/tenant';
 import type { CrawlExtraction, DimensionKey, DimensionScore, Grade } from '@/types/scoring';
 import type { PageSpeedResult, ScorerInput, DimensionScorerResult } from '@/lib/scoring/types';
 import type { SocialData } from '@/lib/crawl/social';
+import type { CompetitorSnapshot } from '@/lib/scoring/types';
+import { analyzeCompetitor } from '@/lib/crawl/competitor';
 import type { BusinessType, TopGap } from '@/types/audit';
 
 // Individual dimension scorers (each runs in its own Inngest step)
@@ -30,6 +32,7 @@ interface AuditStartEvent {
     industry: string;
     target_clients: string;
     social_links: string;
+    competitor_url: string;
   };
 }
 
@@ -71,7 +74,7 @@ export const auditPipeline = inngest.createFunction(
   },
   { event: 'audit/start' },
   async ({ event, step }) => {
-    const { audit_id, url, business_type, industry, target_clients, social_links } =
+    const { audit_id, url, business_type, industry, target_clients, social_links, competitor_url } =
       event.data as AuditStartEvent['data'];
 
     // ---------------------------------------------------------------
@@ -164,6 +167,29 @@ export const auditPipeline = inngest.createFunction(
     });
 
     // ---------------------------------------------------------------
+    // Step 3 — Analyze competitor (if provided) — isolated, graceful degradation
+    // ---------------------------------------------------------------
+    const competitorSnapshot = await step.run('analyze-competitor', async () => {
+      if (!competitor_url) return null;
+
+      try {
+        await updateAudit(audit_id, {
+          current_step: 'Analyzing competitor...',
+        });
+        const snapshot = await analyzeCompetitor(competitor_url);
+        if (snapshot) {
+          console.log(`[audit-pipeline] Competitor snapshot captured for ${competitor_url}`);
+        } else {
+          console.warn(`[audit-pipeline] Competitor analysis returned null for ${competitor_url}`);
+        }
+        return snapshot;
+      } catch (err) {
+        console.warn('[audit-pipeline] Competitor analysis failed (non-fatal):', err);
+        return null;
+      }
+    }) as CompetitorSnapshot | null;
+
+    // ---------------------------------------------------------------
     // Step 4 — Mark as analyzing
     // ---------------------------------------------------------------
     await step.run('update-status-analyzing', async () => {
@@ -188,6 +214,11 @@ export const auditPipeline = inngest.createFunction(
       extraction: crawlData.extraction,
       pagespeed: crawlData.pagespeed as PageSpeedResult | undefined,
     };
+
+    // Only positioning, copy, and visual scorers receive competitor data
+    const competitorScorerInput: ScorerInput = competitorSnapshot
+      ? { ...scorerInput, competitor: competitorSnapshot }
+      : scorerInput;
 
     const DIMENSION_LABELS: Record<DimensionKey, string> = {
       positioning: 'Positioning & Messaging',
@@ -216,13 +247,13 @@ export const auditPipeline = inngest.createFunction(
     // Wrap each in try-catch so one failing scorer doesn't crash the pipeline.
     const positioningResult = await step.run('score-positioning', async () => {
       await updateAudit(audit_id, { current_step: 'Scoring positioning & messaging...' });
-      try { return await scorePositioning(scorerInput); }
+      try { return await scorePositioning(competitorScorerInput); }
       catch (e) { console.error('[score-positioning]', e); return makeFallback('positioning'); }
     });
 
     const copyResult = await step.run('score-copy', async () => {
       await updateAudit(audit_id, { progress_pct: 50, current_step: 'Scoring copy effectiveness...' });
-      try { return await scoreCopyEffectiveness(scorerInput); }
+      try { return await scoreCopyEffectiveness(competitorScorerInput); }
       catch (e) { console.error('[score-copy]', e); return makeFallback('copy'); }
     });
 
@@ -246,7 +277,7 @@ export const auditPipeline = inngest.createFunction(
 
     const visualResult = await step.run('score-visual', async () => {
       await updateAudit(audit_id, { progress_pct: 70, current_step: 'Scoring visual & creative...' });
-      try { return await scoreVisualCreative(scorerInput); }
+      try { return await scoreVisualCreative(competitorScorerInput); }
       catch (e) { console.error('[score-visual]', e); return makeFallback('visual'); }
     });
 

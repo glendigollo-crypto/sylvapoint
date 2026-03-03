@@ -33,6 +33,17 @@ const auditRequestSchema = z.object({
     .min(1, 'target_clients is required')
     .max(500, 'target_clients must be 500 characters or fewer'),
   social_links: z.string().max(1000).optional().default(''),
+  competitor_url: z
+    .string()
+    .optional()
+    .transform((val) => {
+      if (!val) return undefined;
+      const trimmed = val.trim();
+      if (!trimmed) return undefined;
+      if (!/^https?:\/\//i.test(trimmed)) return `https://${trimmed}`;
+      return trimmed;
+    })
+    .pipe(z.string().url('competitor_url must be a valid URL').optional()),
 });
 
 // ---------------------------------------------------------------------------
@@ -75,7 +86,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { url, email, business_type, industry, target_clients, social_links } = parsed.data;
+    const { url, email, business_type, industry, target_clients, social_links, competitor_url } = parsed.data;
 
     // --- Rate limiting -------------------------------------------------------
     const fingerprint = request.headers.get('x-fingerprint') ?? undefined;
@@ -105,6 +116,7 @@ export async function POST(request: NextRequest) {
         industry: industry || null,
         target_clients,
         social_links,
+        competitor_url: competitor_url || null,
         share_slug,
         status: 'pending',
         progress_pct: 0,
@@ -132,6 +144,7 @@ export async function POST(request: NextRequest) {
         industry: industry ?? '',
         target_clients,
         social_links: social_links ?? '',
+        competitor_url: competitor_url ?? '',
       },
     });
 

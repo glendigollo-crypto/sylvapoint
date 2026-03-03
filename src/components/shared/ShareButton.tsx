@@ -25,7 +25,7 @@ export function ShareButton({ url, score, grade }: ShareButtonProps) {
   const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
 
   const pillClass =
-    "rounded-full border border-sylva-700 px-4 py-2 text-xs font-medium text-sylva-300 hover:text-white hover:border-sylva-500 transition-colors";
+    "rounded-full border border-sylva-700 px-4 py-2 text-xs font-medium text-sylva-300 hover:text-sylva-50 hover:border-sylva-500 transition-colors";
 
   return (
     <div className="flex items-center gap-2">

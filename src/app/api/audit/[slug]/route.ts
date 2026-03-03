@@ -69,6 +69,10 @@ export async function GET(
       quick_win: d.quickWins?.[0]
         ? (d.quickWins[0] as { title?: string }).title ?? 'Improve this area'
         : 'Review and improve this dimension',
+      quick_win_description: d.quickWins?.[0]
+        ? (d.quickWins[0] as { description?: string }).description
+        : undefined,
+      summary_free: d.summaryFree ?? undefined,
     }));
 
     // ----- Completed — gate enforcement ------------------------------------
@@ -79,6 +83,7 @@ export async function GET(
       business_type: audit.business_type,
       status: audit.status,
       composite_score: audit.composite_score,
+      competitor_url: audit.competitor_url || null,
       created_at: audit.created_at,
       completed_at: audit.completed_at,
     };
@@ -93,11 +98,29 @@ export async function GET(
         summaryFree: d.summaryFree,
       }));
 
+      // Compute findings count and teaser findings from full dimension data
+      const allFindings = dimensionScores.flatMap((d) =>
+        ((d.findings as Array<{ title?: string; severity?: string }>) ?? []).map((f) => ({
+          title: f.title ?? '',
+          severity: f.severity ?? 'info',
+          dimension_label: d.label,
+        }))
+      );
+      const findingsCount = allFindings.length;
+
+      // Top 2 highest-severity findings (critical > warning > info)
+      const severityOrder: Record<string, number> = { critical: 0, warning: 1, info: 2 };
+      const teaserFindings = [...allFindings]
+        .sort((a, b) => (severityOrder[a.severity] ?? 3) - (severityOrder[b.severity] ?? 3))
+        .slice(0, 2);
+
       return NextResponse.json({
         ...basePayload,
         tier: 'free',
         top_gaps: topGaps,
         dimension_scores: freeDimScores,
+        findings_count: findingsCount,
+        teaser_findings: teaserFindings,
       });
     }
 

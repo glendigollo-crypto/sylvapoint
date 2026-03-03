@@ -111,7 +111,7 @@ export function DimensionCard({
         </div>
 
         <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-semibold text-white truncate">{label}</h3>
+          <h3 className="text-sm font-semibold text-sylva-50 truncate">{label}</h3>
           {summaryFree && (
             <p className="mt-0.5 text-xs text-sylva-400 line-clamp-1">
               {summaryFree}
@@ -120,7 +120,7 @@ export function DimensionCard({
         </div>
 
         <div className="flex items-center gap-3 shrink-0">
-          <span className="font-score text-lg font-bold text-white">
+          <span className="font-score text-lg font-bold text-sylva-50">
             {Math.round(score)}
           </span>
           <span
@@ -176,7 +176,7 @@ export function DimensionCard({
                           >
                             {finding.severity}
                           </span>
-                          <span className="text-sm font-medium text-white">
+                          <span className="text-sm font-medium text-sylva-50">
                             {finding.title}
                           </span>
                         </div>
@@ -207,7 +207,7 @@ export function DimensionCard({
                           ✓
                         </span>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm text-white font-medium">
+                          <p className="text-sm text-sylva-50 font-medium">
                             {qw.title}
                           </p>
                           <p className="text-xs text-sylva-400 mt-0.5">

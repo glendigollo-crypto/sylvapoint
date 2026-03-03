@@ -147,6 +147,11 @@ export async function runScoringEngine(
       dim.quickWins.length > 0
         ? dim.quickWins[0].title
         : 'Review this dimension for improvement opportunities.',
+    quick_win_description:
+      dim.quickWins.length > 0
+        ? dim.quickWins[0].description
+        : undefined,
+    summary_free: dim.summaryFree,
   }));
 
   // Step 6: Return complete result

@@ -28,7 +28,7 @@ export function QuickWinCard({
   return (
     <div className="rounded-xl border border-border bg-white p-5">
       <div className="flex items-start justify-between">
-        <h3 className="text-base font-semibold text-sylva-900">{title}</h3>
+        <h3 className="text-base font-semibold text-sylva-50">{title}</h3>
         <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${impactColors[impact]}`}>
           {impact} impact
         </span>

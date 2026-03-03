@@ -23,7 +23,7 @@ export function DimensionBar({
   return (
     <div ref={ref} className="space-y-2">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-white">{label}</span>
+        <span className="text-sm font-medium text-sylva-50">{label}</span>
         <div className="flex items-center gap-2">
           <span className="font-score text-sm text-sylva-300">
             {score.toFixed(0)}

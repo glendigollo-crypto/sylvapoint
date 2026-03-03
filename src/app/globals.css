@@ -1,26 +1,26 @@
 @import "tailwindcss";
 
 :root {
-  /* Deep Forest palette */
-  --sylva-950: #051512;
-  --sylva-900: #0A1F1C;
-  --sylva-800: #0F2E29;
-  --sylva-700: #163D36;
-  --sylva-600: #1E5248;
-  --sylva-500: #27675A;
-  --sylva-400: #3D8B7A;
-  --sylva-300: #5AB09B;
-  --sylva-200: #8DD4C2;
-  --sylva-100: #C0EBE0;
-  --sylva-50: #EEFAF4;
+  /* Light-theme neutral scale (inverted: 950=lightest, 50=darkest) */
+  --sylva-950: #FFFFFF;
+  --sylva-900: #F8F9FA;
+  --sylva-800: #F1F3F5;
+  --sylva-700: #DEE2E6;
+  --sylva-600: #CED4DA;
+  --sylva-500: #ADB5BD;
+  --sylva-400: #868E96;
+  --sylva-300: #777777;
+  --sylva-200: #495057;
+  --sylva-100: #343A40;
+  --sylva-50: #212529;
 
-  /* Electric Amber accent */
-  --amber-600: #D97706;
-  --amber-500: #F59E0B;
-  --amber-400: #FBBF24;
-  --amber-300: #FCD34D;
+  /* Primary accent — #FF4D4D red */
+  --amber-600: #E63946;
+  --amber-500: #FF4D4D;
+  --amber-400: #FF6B6B;
+  --amber-300: #FF8A8A;
 
-  /* Grade colors */
+  /* Grade colors (universal — unchanged) */
   --grade-a: #10B981;
   --grade-b: #3B82F6;
   --grade-c: #F59E0B;
@@ -28,11 +28,11 @@
   --grade-f: #EF4444;
 
   /* Base */
-  --background: #ffffff;
-  --foreground: #0A1F1C;
-  --muted: #F1F5F9;
-  --muted-foreground: #64748B;
-  --border: #E2E8F0;
+  --background: #FFFFFF;
+  --foreground: #212529;
+  --muted: #F8F9FA;
+  --muted-foreground: #777777;
+  --border: #DEE2E6;
 }
 
 @theme inline {
@@ -81,51 +81,96 @@ body {
 /* Keyframes                                                          */
 /* ------------------------------------------------------------------ */
 
-/* Only keyframes that are actually functional */
 @keyframes counter-tick {
   0%   { opacity: 0.5; transform: scale(0.95); }
   100% { opacity: 1; transform: scale(1); }
 }
 
 /* ------------------------------------------------------------------ */
-/* Glass-morphism                                                     */
+/* Glass-morphism (light theme)                                       */
 /* ------------------------------------------------------------------ */
 
 .glass-card {
   backdrop-filter: blur(16px) saturate(180%);
-  background: rgba(10,31,28,0.5);
-  border: 1px solid rgba(245,158,11,0.15);
+  background: rgba(255,255,255,0.7);
+  border: 1px solid rgba(0,0,0,0.06);
   border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 .glass-card-strong {
   backdrop-filter: blur(16px) saturate(180%);
-  background: rgba(10,31,28,0.65);
-  border: 1px solid rgba(245,158,11,0.2);
+  background: rgba(255,255,255,0.85);
+  border: 1px solid rgba(0,0,0,0.08);
   border-radius: 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
 }
 
 /* ------------------------------------------------------------------ */
 /* Glow effects                                                       */
 /* ------------------------------------------------------------------ */
 
-/* Glow reserved for email gate only — not sprinkled everywhere */
 .glow-amber-subtle {
-  box-shadow: 0 0 30px rgba(245,158,11,0.12);
+  box-shadow: 0 0 30px rgba(255,77,77,0.10);
 }
 
 /* ------------------------------------------------------------------ */
 /* Button glow                                                        */
 /* ------------------------------------------------------------------ */
 
-/* Hover lift only — no idle glow */
 .btn-lift {
   transition: transform 200ms ease, box-shadow 200ms ease;
 }
 
 .btn-lift:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.10);
+}
+
+/* ------------------------------------------------------------------ */
+/* URL input glow pulse                                               */
+/* ------------------------------------------------------------------ */
+
+@keyframes input-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(255,77,77,0.06); }
+  50% { box-shadow: 0 0 35px rgba(255,77,77,0.12); }
+}
+
+.input-glow-pulse {
+  animation: input-glow 3s ease-in-out infinite;
+}
+
+/* ------------------------------------------------------------------ */
+/* Image animations                                                    */
+/* ------------------------------------------------------------------ */
+
+@keyframes float-gentle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.float-gentle {
+  animation: float-gentle 4s ease-in-out infinite;
+}
+
+@keyframes drift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.bg-drift {
+  animation: drift 20s ease-in-out infinite;
+  background-size: 200% 100%;
+}
+
+.tilt-3d {
+  transition: transform 400ms ease;
+  transform-style: preserve-3d;
+}
+
+.tilt-3d:hover {
+  transform: perspective(800px) rotateY(4deg) rotateX(2deg) scale(1.02);
 }
 
 /* ------------------------------------------------------------------ */

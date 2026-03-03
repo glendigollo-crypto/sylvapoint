@@ -124,6 +124,7 @@ CREATE TABLE audits (
   industry TEXT,
   target_clients TEXT,
   social_links TEXT,
+  competitor_url TEXT,
   status audit_status NOT NULL DEFAULT 'pending',
   current_step TEXT,
   progress_pct INT DEFAULT 0,

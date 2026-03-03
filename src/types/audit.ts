@@ -52,6 +52,7 @@ export interface Audit {
   industry: string | null;
   target_clients: string | null;
   social_links: string | null;
+  competitor_url: string | null;
   status: AuditStatus;
   current_step: string | null;
   progress_pct: number;
@@ -76,6 +77,8 @@ export interface TopGap {
   score: number;
   grade: string;
   quick_win: string;
+  quick_win_description?: string;
+  summary_free?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -88,6 +91,7 @@ export interface AuditFormData {
   industry?: string;
   target_clients: string;
   social_links?: string;
+  competitor_url?: string;
 }
 
 // ---------------------------------------------------------------------------

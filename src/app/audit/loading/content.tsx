@@ -112,7 +112,7 @@ export function AuditLoadingContent() {
           animate={{ opacity: 1 }}
           className="text-center rounded-xl border border-sylva-700 bg-sylva-900 p-8 max-w-md"
         >
-          <h2 className="text-xl font-semibold text-white mb-2">Audit Failed</h2>
+          <h2 className="text-xl font-semibold text-sylva-50 mb-2">Audit Failed</h2>
           <p className="text-sylva-300 mb-6">{error}</p>
           <button
             onClick={() => router.push("/audit")}
@@ -141,7 +141,7 @@ export function AuditLoadingContent() {
           animate={{ opacity: 1 }}
           className="text-center mb-8"
         >
-          <h2 className="text-2xl font-bold text-white">
+          <h2 className="text-2xl font-bold text-sylva-50">
             Scanning{" "}
             <span className="text-amber-400">
               {slug ? decodeURIComponent(slug).replace(/^https?:\/\//, "") : "..."}
@@ -192,7 +192,7 @@ export function AuditLoadingContent() {
                 style={{
                   height: hexR,
                   transform: "translateX(-50%) translateY(-100%)",
-                  background: "linear-gradient(to top, transparent, var(--amber-500))",
+                  background: `linear-gradient(to top, transparent, var(--amber-500))`,
                   opacity: 0.5,
                 }}
               />
@@ -200,7 +200,7 @@ export function AuditLoadingContent() {
 
             {/* Center: progress % — no glow, just the number */}
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="font-score text-4xl font-bold text-white">
+              <span className="font-score text-4xl font-bold text-sylva-50">
                 {Math.round(progress)}%
               </span>
               <span className="text-xs text-sylva-600 mt-1">scanning</span>
@@ -293,7 +293,7 @@ export function AuditLoadingContent() {
                 <span
                   className={`text-sm ${
                     isActive
-                      ? "text-white font-medium"
+                      ? "text-sylva-50 font-medium"
                       : isCompleted
                       ? "text-sylva-500 line-through"
                       : "text-sylva-700"

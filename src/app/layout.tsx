@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
+import { Navbar } from "@/components/shared/Navbar";
+import { Footer } from "@/components/shared/Footer";
 import "./globals.css";
 
 const inter = Inter({
@@ -16,27 +18,27 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "SylvaPoint — GTM Audit Tool",
-    template: "%s | SylvaPoint",
+    default: "Sylvia Ndunge | Go-to-Market Architect",
+    template: "%s | Sylvia Ndunge",
   },
   description:
-    "Grade your Go-To-Market strategy in 60 seconds. Free automated GTM audit across 6 dimensions: positioning, copy, SEO, lead capture, performance, and visual creative.",
+    "Go-to-Market Architect for Web3, Fintech, and Greentech pioneers. Free AI-powered GTM audit, strategic frameworks, and fractional growth leadership.",
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
   ),
   openGraph: {
     type: "website",
     locale: "en_US",
-    siteName: "SylvaPoint",
-    title: "SylvaPoint — Grade Your Go-To-Market in 60 Seconds",
+    siteName: "Sylvia Ndunge",
+    title: "Sylvia Ndunge | Go-to-Market Architect",
     description:
-      "Free automated GTM audit. Score your website across 6 dimensions based on frameworks from Dunford, Schwartz, Hormozi, and more.",
+      "Go-to-Market Architect for Web3, Fintech, and Greentech pioneers. Free AI-powered GTM audit, strategic frameworks, and fractional growth leadership.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "SylvaPoint — GTM Audit Tool",
+    title: "Sylvia Ndunge | Go-to-Market Architect",
     description:
-      "Grade your Go-To-Market strategy in 60 seconds. Free automated audit across 6 dimensions.",
+      "Go-to-Market Architect for Web3, Fintech, and Greentech pioneers.",
   },
   robots: {
     index: true,
@@ -46,23 +48,35 @@ export const metadata: Metadata = {
 
 const jsonLd = {
   "@context": "https://schema.org",
-  "@type": "SoftwareApplication",
-  name: "SylvaPoint",
-  applicationCategory: "BusinessApplication",
-  operatingSystem: "Web",
-  description:
-    "Grade your Go-To-Market strategy in 60 seconds. Free automated GTM audit across 6 dimensions: positioning, copy, SEO, lead capture, performance, and visual creative.",
-  url: process.env.NEXT_PUBLIC_SITE_URL || "https://www.sylvapoint.com",
-  offers: {
-    "@type": "Offer",
-    price: "0",
-    priceCurrency: "USD",
-  },
-  aggregateRating: {
-    "@type": "AggregateRating",
-    ratingValue: "4.8",
-    ratingCount: "50",
-  },
+  "@graph": [
+    {
+      "@type": "Person",
+      name: "Sylvia Ndunge",
+      jobTitle: "Go-to-Market Architect",
+      description:
+        "Fractional GTM leader for Web3, Fintech, and Greentech startups. Specializing in positioning, narrative strategy, and market entry.",
+      url: process.env.NEXT_PUBLIC_SITE_URL || "https://www.sylvapoint.com",
+      sameAs: [
+        "https://www.linkedin.com/in/sylviandunge/",
+        "https://x.com/sylviandunge",
+        "https://www.tiktok.com/@sylviandunge",
+      ],
+    },
+    {
+      "@type": "ProfessionalService",
+      name: "SylvaPoint",
+      description:
+        "AI-powered Go-to-Market audit and strategy tools for tech startups.",
+      url: process.env.NEXT_PUBLIC_SITE_URL || "https://www.sylvapoint.com",
+      founder: { "@type": "Person", name: "Sylvia Ndunge" },
+      offers: {
+        "@type": "Offer",
+        name: "Free GTM Audit",
+        price: "0",
+        priceCurrency: "USD",
+      },
+    },
+  ],
 };
 
 export default function RootLayout({
@@ -87,9 +101,9 @@ export default function RootLayout({
         >
           Skip to main content
         </a>
-        <main id="main-content">
-          {children}
-        </main>
+        <Navbar />
+        <main id="main-content">{children}</main>
+        <Footer />
       </body>
     </html>
   );

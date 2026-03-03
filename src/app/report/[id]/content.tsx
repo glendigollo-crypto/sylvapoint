@@ -125,24 +125,19 @@ export function ReportContent({
 
   return (
     <div className="min-h-screen bg-sylva-950">
-      {/* Header */}
-      <div className="bg-gradient-to-b from-sylva-950 to-sylva-900 px-4 py-8">
-        <div className="mx-auto max-w-5xl">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="text-lg font-bold text-white">
-              SylvaPoint
-            </Link>
-            <Link
-              href={`/audit/${slug}`}
-              className="text-sm text-sylva-400 hover:text-white"
-            >
-              Back to Scorecard
-            </Link>
-          </div>
-          <p className="mt-4 text-sm text-sylva-400">
+      {/* Context Banner */}
+      <div className="bg-gradient-to-b from-sylva-950 to-sylva-900 px-4 py-6">
+        <div className="mx-auto max-w-5xl flex items-center justify-between">
+          <p className="text-sm text-sylva-400">
             Full GTM Report for{" "}
             <span className="text-sylva-200">{data.url}</span>
           </p>
+          <Link
+            href={`/audit/${slug}`}
+            className="text-sm text-amber-500 hover:text-amber-400 transition-colors"
+          >
+            &larr; Back to Scorecard
+          </Link>
         </div>
       </div>
 
@@ -152,13 +147,13 @@ export function ReportContent({
           <div className="flex flex-col md:flex-row items-center gap-8">
             <ScoreGauge score={score} grade={grade} size={180} />
             <div>
-              <h1 className="text-2xl font-bold text-white">
+              <h1 className="text-2xl font-bold text-sylva-50">
                 GTM Readiness Score:{" "}
                 <span className="text-amber-400">{score}/100</span>
               </h1>
               <p className="mt-2 text-sylva-300">
                 Your audit identified{" "}
-                <span className="text-white font-semibold">
+                <span className="text-sylva-50 font-semibold">
                   {totalFindings} findings
                 </span>{" "}
                 across {dimensions.length} dimensions.
@@ -172,7 +167,7 @@ export function ReportContent({
                 </Link>
                 <Link
                   href="/book"
-                  className="rounded-lg border border-sylva-600 px-4 py-2 text-sm font-semibold text-white hover:border-sylva-500"
+                  className="rounded-lg border border-sylva-600 px-4 py-2 text-sm font-semibold text-sylva-50 hover:border-sylva-500"
                 >
                   Book a Call
                 </Link>
@@ -185,7 +180,7 @@ export function ReportContent({
       {/* Priority Action Plan */}
       <div className="px-4 pb-12">
         <div className="mx-auto max-w-5xl">
-          <h2 className="text-xl font-bold text-white mb-6">
+          <h2 className="text-xl font-bold text-sylva-50 mb-6">
             Priority Action Plan
           </h2>
           <div className="rounded-xl border border-sylva-700 bg-sylva-900/50 p-6">
@@ -210,7 +205,7 @@ export function ReportContent({
                       {i + 1}
                     </span>
                     <div>
-                      <p className="text-sm font-medium text-white">
+                      <p className="text-sm font-medium text-sylva-50">
                         {item.title}
                       </p>
                       <p className="text-xs text-sylva-400 mt-0.5">
@@ -227,7 +222,7 @@ export function ReportContent({
       {/* Dimension Details */}
       <div className="px-4 pb-12">
         <div className="mx-auto max-w-5xl space-y-4">
-          <h2 className="text-xl font-bold text-white mb-6">
+          <h2 className="text-xl font-bold text-sylva-50 mb-6">
             Dimension Details
           </h2>
 
@@ -263,7 +258,7 @@ export function ReportContent({
                       {dim.grade}
                     </div>
                     <div>
-                      <h3 className="text-lg font-bold text-white">
+                      <h3 className="text-lg font-bold text-sylva-50">
                         {dimLabel}
                       </h3>
                       <p className="text-sm text-sylva-400">
@@ -326,7 +321,7 @@ export function ReportContent({
                                 <span className="text-xs font-bold uppercase">
                                   {finding.severity}
                                 </span>
-                                <span className="text-sm font-medium text-white">
+                                <span className="text-sm font-medium text-sylva-50">
                                   {finding.title}
                                 </span>
                               </div>
@@ -356,7 +351,7 @@ export function ReportContent({
                               className="rounded-lg bg-sylva-800/50 p-3"
                             >
                               <div className="flex items-center justify-between mb-1">
-                                <span className="text-sm font-medium text-white">
+                                <span className="text-sm font-medium text-sylva-50">
                                   {qw.title}
                                 </span>
                                 <div className="flex gap-2">
@@ -402,7 +397,7 @@ export function ReportContent({
           </Link>
           <Link
             href="/book"
-            className="block rounded-xl border-2 border-sylva-600 p-6 text-center text-white hover:border-sylva-500 transition-colors"
+            className="block rounded-xl border-2 border-sylva-600 p-6 text-center text-sylva-50 hover:border-sylva-500 transition-colors"
           >
             <h3 className="text-lg font-bold">Book a Strategy Call</h3>
             <p className="mt-1 text-sm text-sylva-300">
@@ -412,16 +407,6 @@ export function ReportContent({
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="border-t border-sylva-800 py-8 px-4 text-center text-sm text-sylva-600">
-        <p>
-          Powered by{" "}
-          <Link href="/" className="text-sylva-400 hover:text-white">
-            SylvaPoint
-          </Link>{" "}
-          — The GTM-6 Framework
-        </p>
-      </footer>
     </div>
   );
 }

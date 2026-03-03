@@ -48,3 +48,4 @@ SYLVAPOINT_GTM_AUDIT_TOOL_BLUEPRINT.md
 next-env.d.ts
 
 .vercel
+.env*.local

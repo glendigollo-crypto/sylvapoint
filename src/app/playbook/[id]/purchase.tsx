@@ -131,20 +131,15 @@ export function PlaybookPurchase({
 
   return (
     <div className="min-h-screen bg-sylva-950">
-      {/* Header */}
-      <div className="bg-gradient-to-b from-sylva-950 to-sylva-900 px-4 py-8">
+      {/* Context Banner */}
+      <div className="bg-gradient-to-b from-sylva-950 to-sylva-900 px-4 py-4">
         <div className="mx-auto max-w-4xl">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="text-lg font-bold text-white">
-              SylvaPoint
-            </Link>
-            <Link
-              href={`/audit/${slug}`}
-              className="text-sm text-sylva-400 hover:text-white"
-            >
-              Back to Scorecard
-            </Link>
-          </div>
+          <Link
+            href={`/audit/${slug}`}
+            className="text-sm text-amber-500 hover:text-amber-400 transition-colors"
+          >
+            &larr; Back to Scorecard
+          </Link>
         </div>
       </div>
 
@@ -193,7 +188,7 @@ export function PlaybookPurchase({
         <div className="mx-auto max-w-4xl grid gap-8 lg:grid-cols-2">
           {/* Left: What's Included */}
           <div>
-            <h1 className="text-2xl font-bold text-white mb-2">
+            <h1 className="text-2xl font-bold text-sylva-50 mb-2">
               Your Personalized GTM Playbook
             </h1>
             <p className="text-sylva-300 mb-6">
@@ -219,7 +214,7 @@ export function PlaybookPurchase({
             {/* Guarantee */}
             <div className="rounded-lg border border-sylva-700 bg-sylva-900/50 p-4">
               <p className="text-sm text-sylva-300">
-                <span className="font-semibold text-white">
+                <span className="font-semibold text-sylva-50">
                   100% Money-Back Guarantee
                 </span>{" "}
                 — If the playbook doesn&apos;t provide actionable value for your
@@ -232,7 +227,7 @@ export function PlaybookPurchase({
           <div>
             <div className="rounded-xl border border-sylva-700 bg-sylva-900/80 p-6">
               <div className="text-center mb-6">
-                <p className="text-4xl font-bold text-white">$47</p>
+                <p className="text-4xl font-bold text-sylva-50">$47</p>
                 <p className="text-sm text-sylva-400 mt-1">One-time payment</p>
               </div>
 
@@ -242,8 +237,8 @@ export function PlaybookPurchase({
                   onClick={() => setActiveTab("stripe")}
                   className={`flex-1 rounded-md py-2 text-sm font-medium transition-colors ${
                     activeTab === "stripe"
-                      ? "bg-sylva-700 text-white"
-                      : "text-sylva-400 hover:text-white"
+                      ? "bg-sylva-700 text-sylva-50"
+                      : "text-sylva-400 hover:text-sylva-50"
                   }`}
                 >
                   Card / Stripe
@@ -252,8 +247,8 @@ export function PlaybookPurchase({
                   onClick={() => setActiveTab("mpesa")}
                   className={`flex-1 rounded-md py-2 text-sm font-medium transition-colors ${
                     activeTab === "mpesa"
-                      ? "bg-sylva-700 text-white"
-                      : "text-sylva-400 hover:text-white"
+                      ? "bg-sylva-700 text-sylva-50"
+                      : "text-sylva-400 hover:text-sylva-50"
                   }`}
                 >
                   M-Pesa
@@ -288,12 +283,12 @@ export function PlaybookPurchase({
                     placeholder="254712345678"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="w-full rounded-lg border border-sylva-700 bg-sylva-800 px-4 py-3 text-white placeholder-sylva-500 focus:border-amber-500 focus:outline-none mb-4"
+                    className="w-full rounded-lg border border-sylva-700 bg-sylva-800 px-4 py-3 text-sylva-50 placeholder-sylva-500 focus:border-amber-500 focus:outline-none mb-4"
                   />
                   <button
                     onClick={handleMpesaPayment}
                     disabled={isLoading}
-                    className="w-full rounded-lg bg-green-600 py-3 font-semibold text-white hover:bg-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="w-full rounded-lg bg-green-600 py-3 font-semibold text-sylva-50 hover:bg-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     {isLoading ? "Sending STK Push..." : "Pay with M-Pesa"}
                   </button>
@@ -328,16 +323,6 @@ export function PlaybookPurchase({
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="border-t border-sylva-800 py-8 px-4 text-center text-sm text-sylva-600">
-        <p>
-          Powered by{" "}
-          <Link href="/" className="text-sylva-400 hover:text-white">
-            SylvaPoint
-          </Link>{" "}
-          — The GTM-6 Framework
-        </p>
-      </footer>
     </div>
   );
 }

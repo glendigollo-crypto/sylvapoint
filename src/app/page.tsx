@@ -1,173 +1,185 @@
+"use client";
+
+import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
+import { gsap, useGSAP } from "@/lib/gsap";
+import { ThesisSection } from "@/components/home/ThesisSection";
+import { LogoStrip } from "@/components/home/LogoStrip";
+import { ToolShowcase } from "@/components/home/ToolShowcase";
+import { EngagementPaths } from "@/components/home/EngagementPaths";
+import { LatestPosts } from "@/components/home/LatestPosts";
+import { ArrowRight } from "lucide-react";
 
 export default function Home() {
+  const heroRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const [heroUrl, setHeroUrl] = useState("");
+
+  useGSAP(
+    () => {
+      const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+      tl.from("[data-hero-headline]", { y: 40, opacity: 0, duration: 0.8 })
+        .from("[data-hero-sub]", { y: 20, opacity: 0, duration: 0.6 }, "-=0.3")
+        .from("[data-hero-form]", { y: 20, opacity: 0, duration: 0.5 }, "-=0.2")
+        .from("[data-hero-secondary]", { y: 10, opacity: 0, duration: 0.4 }, "-=0.1");
+    },
+    { scope: heroRef }
+  );
+
+  const handleHeroAudit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!heroUrl.trim()) {
+      router.push("/audit");
+      return;
+    }
+    router.push(`/audit?url=${encodeURIComponent(heroUrl.trim())}`);
+  };
+
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative bg-sylva-900 text-white overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-sylva-950 via-sylva-900 to-sylva-800" />
-        <div className="relative mx-auto max-w-6xl px-4 py-24 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
-              Grade Your{" "}
-              <span className="text-amber-400">Go-To-Market</span>
-              <br />
-              in 60 Seconds
-            </h1>
-            <p className="mt-6 mx-auto max-w-2xl text-lg text-sylva-200">
-              The first automated GTM readiness audit. Score your website
-              and social media presence across 6 dimensions based on frameworks
-              from Dunford, Schwartz, Hormozi, and more.
+      {/* ───── Hero Section ───── */}
+      <section
+        ref={heroRef}
+        className="relative overflow-hidden bg-gradient-to-br from-sylva-50 via-sylva-100 to-sylva-200"
+      >
+        {/* AI-generated hero background */}
+        <Image
+          src="/images/generated/hero-bg.png"
+          alt=""
+          fill
+          className="object-cover opacity-10 pointer-events-none"
+          priority
+        />
+
+        <div className="relative mx-auto max-w-6xl px-4 py-24 sm:px-6 sm:py-32 lg:px-8 lg:py-40">
+          <div className="max-w-3xl">
+            <p
+              data-hero-headline
+              className="text-sm font-semibold text-amber-500 uppercase tracking-wider mb-4"
+            >
+              Go-to-Market Architect
             </p>
-            <div className="mt-10">
-              <Link
-                href="/audit"
-                className="inline-flex items-center rounded-lg bg-amber-500 px-8 py-4 text-lg font-semibold text-sylva-950 transition-colors hover:bg-amber-400"
+            <h1
+              data-hero-headline
+              className="text-4xl font-bold tracking-tight text-sylva-950 sm:text-5xl lg:text-6xl leading-[1.1]"
+            >
+              Innovation Without a Narrative
+              <br />
+              <span className="text-amber-500">is Just Code.</span>
+            </h1>
+            <p
+              data-hero-sub
+              className="mt-6 text-lg text-sylva-400 max-w-xl leading-relaxed"
+            >
+              I help Web3, Fintech, and Greentech founders turn technical
+              innovation into market traction — through positioning, narrative
+              strategy, and the GTM-6 framework.
+            </p>
+
+            {/* Inline URL Audit Form */}
+            <form
+              data-hero-form
+              onSubmit={handleHeroAudit}
+              className="mt-8 flex flex-col sm:flex-row gap-3 max-w-lg"
+            >
+              <div className="relative flex-1">
+                <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-sylva-500 text-sm select-none">
+                  https://
+                </span>
+                <input
+                  type="text"
+                  value={heroUrl}
+                  onChange={(e) => setHeroUrl(e.target.value)}
+                  placeholder="yourwebsite.com"
+                  className="block w-full rounded-lg border border-sylva-600 bg-sylva-950 pl-[4.5rem] pr-4 py-3.5 text-sylva-50 placeholder:text-sylva-500 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-sm"
+                />
+              </div>
+              <button
+                type="submit"
+                className="rounded-lg bg-amber-500 px-6 py-3.5 text-sm font-semibold text-sylva-950 transition-all hover:bg-amber-400 btn-lift whitespace-nowrap flex items-center justify-center gap-2"
               >
-                Audit Your GTM — Free
+                Audit My GTM
+                <ArrowRight size={16} />
+              </button>
+            </form>
+            <p data-hero-secondary className="mt-3 text-xs text-sylva-500">
+              Free. No email required. Results in 60 seconds.
+            </p>
+
+            <div data-hero-secondary className="mt-8">
+              <Link
+                href="/book"
+                className="text-sm font-medium text-sylva-400 hover:text-amber-500 transition-colors inline-flex items-center gap-1"
+              >
+                Or book a strategy call <ArrowRight size={14} />
               </Link>
-              <p className="mt-3 text-sm text-sylva-300">
-                No credit card. No email required. Results in 60 seconds.
-              </p>
+            </div>
+          </div>
+
+          {/* Headshot */}
+          <div className="hidden lg:block absolute right-8 bottom-0 xl:right-16">
+            <div className="w-64 h-64 xl:w-80 xl:h-80 rounded-full overflow-hidden border-2 border-amber-500/20 shadow-lg float-gentle">
+              <Image
+                src="/images/generated/headshot-placeholder.png"
+                alt="Sylvia Ndunge"
+                width={320}
+                height={320}
+                className="object-cover w-full h-full"
+              />
             </div>
           </div>
         </div>
       </section>
 
-      {/* What You'll Get */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-6xl">
-          <h2 className="text-center text-3xl font-bold text-sylva-900">
-            The GTM-6 Framework
-          </h2>
-          <p className="mt-4 text-center text-muted-foreground max-w-2xl mx-auto">
-            Your website and social presence scored across 6 critical go-to-market dimensions
-          </p>
-          <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {[
-              {
-                name: "Positioning & Messaging",
-                desc: "Is your market position clear on your site and socials? Does your messaging resonate with ideal buyers across every channel?",
-                icon: "Target",
-              },
-              {
-                name: "Copy Effectiveness",
-                desc: "Do your headlines and social posts convert? Is your copy compelling, specific, and human-written — on-site and off?",
-                icon: "PenTool",
-              },
-              {
-                name: "SEO & Content Quality",
-                desc: "Can buyers find you on Google and social? Is your content authoritative, discoverable, and E-E-A-T compliant?",
-                icon: "Search",
-              },
-              {
-                name: "Lead Capture",
-                desc: "Are you capturing demand from your site and social traffic? Lead magnets, CTAs, link-in-bio, and bridge offers?",
-                icon: "Magnet",
-              },
-              {
-                name: "Website Performance",
-                desc: "Is your site fast, mobile-ready, accessible, and following best practices?",
-                icon: "Gauge",
-              },
-              {
-                name: "Visual & Creative",
-                desc: "Do your visuals sell across web and social? Is your brand identity consistent, scroll-stopping, and professional?",
-                icon: "Eye",
-              },
-            ].map((dim) => (
-              <div
-                key={dim.name}
-                className="rounded-xl border border-border bg-white p-6 transition-shadow hover:shadow-lg"
-              >
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-sylva-50 text-sylva-600">
-                  <span className="text-2xl" aria-hidden="true">
-                    {dim.icon === "Target" && "◎"}
-                    {dim.icon === "PenTool" && "✎"}
-                    {dim.icon === "Search" && "⌕"}
-                    {dim.icon === "Magnet" && "⊛"}
-                    {dim.icon === "Gauge" && "◉"}
-                    {dim.icon === "Eye" && "◉"}
-                  </span>
-                </div>
-                <h3 className="text-lg font-semibold text-sylva-900">
-                  {dim.name}
-                </h3>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  {dim.desc}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* ───── GTM Truths ───── */}
+      <ThesisSection />
 
-      {/* How It Works */}
-      <section className="bg-sylva-50 py-20 px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-4xl">
-          <h2 className="text-center text-3xl font-bold text-sylva-900">
-            How It Works
-          </h2>
-          <div className="mt-12 grid gap-8 md:grid-cols-3">
-            {[
-              {
-                step: "1",
-                title: "Enter Your Details",
-                desc: "Paste your website URL, add your social profiles, and tell us your business type.",
-              },
-              {
-                step: "2",
-                title: "AI Analysis",
-                desc: "We crawl your site and social profiles, then analyze everything across 6 GTM dimensions.",
-              },
-              {
-                step: "3",
-                title: "Get Your Score",
-                desc: "See your GTM scorecard with grades, gaps, and quick wins.",
-              },
-            ].map((item) => (
-              <div key={item.step} className="text-center">
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-amber-500 text-xl font-bold text-sylva-950">
-                  {item.step}
-                </div>
-                <h3 className="mt-4 text-lg font-semibold text-sylva-900">
-                  {item.title}
-                </h3>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  {item.desc}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* ───── Trust Logos ───── */}
+      <LogoStrip />
 
-      {/* Final CTA */}
-      <section className="bg-sylva-900 py-20 px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-3xl text-center">
-          <h2 className="text-3xl font-bold text-white">
+      {/* ───── Tool Showcase ───── */}
+      <ToolShowcase />
+
+      {/* ───── Engagement Paths ───── */}
+      <EngagementPaths />
+
+      {/* ───── Latest Blog Posts ───── */}
+      <LatestPosts />
+
+      {/* ───── Final CTA ───── */}
+      <section className="relative bg-gradient-to-br from-sylva-50 via-sylva-100 to-sylva-200 py-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
+        <Image
+          src="/images/generated/cta-pattern.png"
+          alt=""
+          fill
+          className="object-cover opacity-[0.06] pointer-events-none"
+        />
+        <div className="relative mx-auto max-w-3xl text-center">
+          <h2 className="text-3xl font-bold text-sylva-950">
             Your GTM has gaps. Let&apos;s find them.
           </h2>
-          <p className="mt-4 text-sylva-200">
-            Most businesses leave 40-60% of their GTM potential on the table
-            — across their website and social channels.
-            Find out where you stand in 60 seconds.
+          <p className="mt-4 text-sylva-400">
+            Most startups leave 40-60% of their GTM potential on the table.
+            Find out where you stand — then fix it.
           </p>
-          <Link
-            href="/audit"
-            className="mt-8 inline-flex items-center rounded-lg bg-amber-500 px-8 py-4 text-lg font-semibold text-sylva-950 transition-colors hover:bg-amber-400"
-          >
-            Start Your Free GTM Audit
-          </Link>
+          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link
+              href="/audit"
+              className="rounded-lg bg-amber-500 px-8 py-4 text-lg font-semibold text-sylva-950 transition-all hover:bg-amber-400 btn-lift"
+            >
+              Start Your Free Audit
+            </Link>
+            <Link
+              href="/book"
+              className="rounded-lg border-2 border-sylva-600 px-8 py-4 text-lg font-semibold text-sylva-950 transition-all hover:border-sylva-50 hover:bg-sylva-950/5"
+            >
+              Book a Strategy Call
+            </Link>
+          </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="border-t border-border py-8 px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-6xl text-center text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} SylvaPoint. All rights reserved.</p>
-        </div>
-      </footer>
     </div>
   );
 }

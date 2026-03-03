@@ -14,7 +14,7 @@ const VALUE_PROPS = [
   "Detailed analysis per dimension",
   "Priority action items ranked by impact",
   "Real examples from YOUR site",
-  "Industry benchmarks comparison",
+  "Severity-ranked findings with recommendations",
   "5 actionable quick wins",
 ];
 
@@ -66,7 +66,7 @@ export function EmailGateModal({
         <span className="font-score text-5xl font-bold text-amber-400">
           {findingsCount}
         </span>
-        <p className="text-lg font-semibold text-white mt-2">
+        <p className="text-lg font-semibold text-sylva-50 mt-2">
           findings detected
         </p>
         <p className="text-sm text-sylva-400 mt-1">
@@ -105,7 +105,7 @@ export function EmailGateModal({
           placeholder="your@email.com"
           required
           aria-describedby={error ? "gate-error" : undefined}
-          className="w-full rounded-xl border border-sylva-700 bg-sylva-900/80 px-4 py-3.5 text-white placeholder:text-sylva-500 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 transition-colors"
+          className="w-full rounded-xl border border-sylva-700 bg-sylva-900/80 px-4 py-3.5 text-sylva-50 placeholder:text-sylva-500 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 transition-colors"
         />
         <button
           type="submit"

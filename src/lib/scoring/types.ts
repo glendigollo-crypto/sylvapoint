@@ -26,6 +26,53 @@ export interface ScorerInput {
   industry?: string;
   extraction: import('@/types/scoring').CrawlExtraction;
   pagespeed?: PageSpeedResult;
+  competitor?: CompetitorSnapshot;
+}
+
+// ---------------------------------------------------------------------------
+// CompetitorSnapshot — lightweight competitor data from homepage fetch
+// ---------------------------------------------------------------------------
+
+/**
+ * Build a compact prompt section from a CompetitorSnapshot.
+ * Appended to scorer prompts for positioning, copy, and visual dimensions.
+ */
+export function buildCompetitorPromptSection(c: CompetitorSnapshot): string {
+  const lines = [
+    `\n## Competitor Reference: ${c.url}`,
+    `- Meta title: ${c.metaTitle || '(none)'}`,
+    `- Meta description: ${c.metaDescription || '(none)'}`,
+    `- Headlines: ${c.headlines.slice(0, 8).join(' | ') || '(none detected)'}`,
+    `- CTAs: ${c.ctaCount} found`,
+    `- Forms: ${c.formCount} | Images: ${c.imageCount} | Video: ${c.hasVideo ? 'Yes' : 'No'}`,
+    `- Testimonials: ${c.hasTestimonials ? 'Yes' : 'No'} | Pricing page: ${c.hasPricing ? 'Yes' : 'No'}`,
+  ];
+  if (c.techStack.length > 0) {
+    lines.push(`- Tech stack: ${c.techStack.join(', ')}`);
+  }
+  if (c.pagespeedScore != null) {
+    lines.push(`- PageSpeed performance score: ${c.pagespeedScore}/100`);
+  }
+  lines.push(
+    '',
+    'Note any areas where the competitor\'s GTM presence appears stronger or weaker. Reference these observations in findings where relevant.',
+  );
+  return lines.join('\n');
+}
+
+export interface CompetitorSnapshot {
+  url: string;
+  headlines: string[];
+  ctaCount: number;
+  formCount: number;
+  imageCount: number;
+  hasVideo: boolean;
+  hasTestimonials: boolean;
+  hasPricing: boolean;
+  techStack: string[];
+  metaTitle: string;
+  metaDescription: string;
+  pagespeedScore?: number;
 }
 
 // ---------------------------------------------------------------------------
