@@ -42,8 +42,9 @@ const DEFAULT_MAX_TOKENS = 2048;
 const DEFAULT_TEMPERATURE = 0.3;
 /** No client-level retries — scorers have try-catch fallbacks, Inngest handles step retries. */
 const MAX_RETRIES = 0;
-/** Per-request timeout — must leave headroom within Vercel's 60s function limit. */
-const REQUEST_TIMEOUT_MS = 55_000;
+/** Per-request timeout — must leave headroom within Vercel's 60s function limit.
+ *  40s API + ~5s overhead (cold start, prompt build, DB update) = ~45s < 60s. */
+const REQUEST_TIMEOUT_MS = 40_000;
 
 /**
  * Pricing per million tokens (USD). Updated to reflect current rates.
@@ -149,9 +150,11 @@ export async function callClaude(
 
   const client = getClient();
   let lastError: Error | undefined;
+  const startTime = Date.now();
 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     try {
+      console.log(`[claude] Calling ${model} (maxTokens=${maxTokens}, timeout=${REQUEST_TIMEOUT_MS}ms)`);
       const message = await client.messages.create({
         model,
         max_tokens: maxTokens,
@@ -171,9 +174,11 @@ export async function callClaude(
         .map((block) => block.text)
         .join('');
 
+      const elapsed = Date.now() - startTime;
       const inputTokens = message.usage.input_tokens;
       const outputTokens = message.usage.output_tokens;
       const cost = calculateCost(model, inputTokens, outputTokens);
+      console.log(`[claude] ${model} responded in ${elapsed}ms (${inputTokens}in/${outputTokens}out, $${cost.toFixed(4)})`);
 
       return {
         content,
