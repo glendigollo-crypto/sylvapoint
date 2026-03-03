@@ -87,11 +87,16 @@ function buildPricingContent(extraction: ScorerInput['extraction']): string {
  * Extract JSON from a Claude response string, handling potential markdown fences.
  */
 function extractJson(raw: string): unknown {
-  // Try to find a JSON block inside markdown code fences
-  const fenceMatch = raw.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
-  const jsonStr = fenceMatch ? fenceMatch[1] : raw;
-
-  return JSON.parse(jsonStr.trim());
+  // Find the first { and last } to extract the JSON object
+  const start = raw.indexOf('{');
+  const end = raw.lastIndexOf('}');
+  if (start !== -1 && end > start) {
+    let jsonStr = raw.slice(start, end + 1);
+    // Strip trailing commas before ] or } (common LLM JSON error)
+    jsonStr = jsonStr.replace(/,\s*([}\]])/g, '$1');
+    return JSON.parse(jsonStr);
+  }
+  return JSON.parse(raw.trim());
 }
 
 // ---------------------------------------------------------------------------
@@ -180,7 +185,7 @@ export async function scorePositioning(
   let response;
   try {
     response = await callClaude({
-      model: 'claude-sonnet-4-5-20250514',
+      model: 'claude-sonnet-4-6',
       systemPrompt: POSITIONING_SYSTEM_PROMPT,
       userPrompt,
       maxTokens: 2048,

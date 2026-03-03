@@ -552,7 +552,7 @@ export async function POST(request: NextRequest) {
       }));
 
       const claudeResponse = await callClaude({
-        model: "claude-sonnet-4-5-20250514",
+        model: "claude-sonnet-4-6",
         systemPrompt: PLAYBOOK_SYSTEM_PROMPT,
         userPrompt: PLAYBOOK_USER_PROMPT({
           businessType: audit.business_type,

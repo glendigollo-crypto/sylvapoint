@@ -13,7 +13,7 @@ import Anthropic from '@anthropic-ai/sdk';
 
 export type ClaudeModel =
   | 'claude-haiku-4-5-20251001'
-  | 'claude-sonnet-4-5-20250514';
+  | 'claude-sonnet-4-6';
 
 export interface ClaudeCallOptions {
   model?: ClaudeModel;
@@ -53,7 +53,7 @@ const PRICING: Record<ClaudeModel, { inputPerMTok: number; outputPerMTok: number
     inputPerMTok: 1.0,
     outputPerMTok: 5.0,
   },
-  'claude-sonnet-4-5-20250514': {
+  'claude-sonnet-4-6': {
     inputPerMTok: 3.0,
     outputPerMTok: 15.0,
   },
@@ -157,7 +157,7 @@ export async function callClaude(
         messages: [
           {
             role: 'user',
-            content: options.userPrompt,
+            content: options.userPrompt + '\n\nIMPORTANT: Respond with ONLY a valid JSON object. No markdown fences, no commentary, no trailing commas. Start with { and end with }.',
           },
         ],
       });

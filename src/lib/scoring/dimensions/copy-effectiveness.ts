@@ -59,9 +59,14 @@ function buildBodyContent(extraction: ScorerInput['extraction']): string {
  * Extract JSON from a Claude response string, handling potential markdown fences.
  */
 function extractJson(raw: string): unknown {
-  const fenceMatch = raw.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
-  const jsonStr = fenceMatch ? fenceMatch[1] : raw;
-  return JSON.parse(jsonStr.trim());
+  const start = raw.indexOf('{');
+  const end = raw.lastIndexOf('}');
+  if (start !== -1 && end > start) {
+    let jsonStr = raw.slice(start, end + 1);
+    jsonStr = jsonStr.replace(/,\s*([}\]])/g, '$1');
+    return JSON.parse(jsonStr);
+  }
+  return JSON.parse(raw.trim());
 }
 
 // ---------------------------------------------------------------------------
@@ -148,7 +153,7 @@ export async function scoreCopyEffectiveness(
   let response;
   try {
     response = await callClaude({
-      model: 'claude-sonnet-4-5-20250514',
+      model: 'claude-sonnet-4-6',
       systemPrompt: COPY_SYSTEM_PROMPT,
       userPrompt,
       maxTokens: 2048,

@@ -83,9 +83,9 @@ export async function scorePerformance(
   }
 
   // Map PageSpeed data to sub-scores
-  const lcpScore = getAuditScore(pagespeed, 'largest-contentful-paint', pagespeed.performance * 100);
-  const fidScore = getAuditScore(pagespeed, 'max-potential-fid', pagespeed.performance * 100);
-  const clsScore = getAuditScore(pagespeed, 'cumulative-layout-shift', pagespeed.performance * 100);
+  const lcpScore = getAuditScore(pagespeed, 'largest-contentful-paint', pagespeed.performance);
+  const fidScore = getAuditScore(pagespeed, 'total-blocking-time', pagespeed.performance);
+  const clsScore = getAuditScore(pagespeed, 'cumulative-layout-shift', pagespeed.performance);
   const overallScore = lighthouseToScore(pagespeed.performance);
 
   const scoreMap: Record<string, number> = {

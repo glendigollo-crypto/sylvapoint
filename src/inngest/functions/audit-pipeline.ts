@@ -78,14 +78,14 @@ export const auditPipeline = inngest.createFunction(
     });
 
     // ---------------------------------------------------------------
-    // Step 2 — Crawl website + PageSpeed + Social detection in parallel
+    // Step 2 — Crawl website + PageSpeed + Extract content
+    //   (merged into one step to avoid passing huge raw pages between steps)
     // ---------------------------------------------------------------
-    const crawlData = await step.run('crawl-website', async () => {
-      const [firecrawlResult, pagespeedResult, socialResult] =
+    const crawlData = await step.run('crawl-and-extract', async () => {
+      const [firecrawlResult, pagespeedResult] =
         await Promise.allSettled([
           crawlWebsite(url),
           getPageSpeedScores(url),
-          Promise.resolve(null as SocialData | null), // Social detection runs on crawl results
         ]);
 
       let crawl =
@@ -121,48 +121,38 @@ export const auditPipeline = inngest.createFunction(
       // Detect social links from crawled HTML
       const social = detectSocialLinks(crawl.pages, social_links || undefined);
 
-      // Store raw crawl data
+      await updateAudit(audit_id, {
+        progress_pct: 25,
+        current_step: 'Website crawled successfully',
+      });
+
+      // Extract structured content immediately (avoids passing raw pages between steps)
+      const extracted = extractContent(crawl.pages);
+
+      // Store raw crawl data + extracted content in DB
       await getAdminSupabase().from('crawl_data').insert({
         tenant_id: DEFAULT_TENANT_ID,
         audit_id: audit_id,
         firecrawl_raw: crawl,
         pagespeed_raw: pagespeed,
         social_data: social,
+        extracted_content: extracted,
         pages_crawled: crawl.pagesCount,
         crawled_at: new Date().toISOString(),
       });
-
-      await updateAudit(audit_id, {
-        progress_pct: 25,
-        current_step: 'Website crawled successfully',
-      });
-
-      return {
-        pages: crawl.pages,
-        pagesCount: crawl.pagesCount,
-        pagespeed,
-        social,
-      };
-    });
-
-    // ---------------------------------------------------------------
-    // Step 3 — Extract structured content
-    // ---------------------------------------------------------------
-    const extraction = await step.run('extract-content', async () => {
-      const extracted = extractContent(crawlData.pages);
-
-      // Store extracted content in crawl_data
-      await getAdminSupabase()
-        .from('crawl_data')
-        .update({ extracted_content: extracted })
-        .eq('audit_id', audit_id);
 
       await updateAudit(audit_id, {
         progress_pct: 35,
         current_step: 'Content extracted, starting analysis...',
       });
 
-      return extracted as CrawlExtraction;
+      // Return only the small extracted data (not raw pages)
+      return {
+        extraction: extracted as CrawlExtraction,
+        pagesCount: crawl.pagesCount,
+        pagespeed,
+        social,
+      };
     });
 
     // ---------------------------------------------------------------
@@ -187,7 +177,7 @@ export const auditPipeline = inngest.createFunction(
           business_type: business_type as BusinessType,
           industry: industry || undefined,
           target_clients,
-          extraction,
+          extraction: crawlData.extraction,
           pagespeed: crawlData.pagespeed as PageSpeedResult | undefined,
         });
 
