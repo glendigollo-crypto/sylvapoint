@@ -75,7 +75,7 @@ export default function AboutPage() {
           <div className="shrink-0">
             <div className="w-48 h-48 rounded-full overflow-hidden border-2 border-amber-500/30 shadow-lg">
               <Image
-                src="/images/generated/headshot-placeholder.png"
+                src="/images/generated/hero-portrait.png"
                 alt="Sylvia Ndunge"
                 width={192}
                 height={192}
