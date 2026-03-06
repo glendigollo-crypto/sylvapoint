@@ -73,7 +73,7 @@ export default function Home() {
               data-hero-sub
               className="mt-6 text-lg text-sylva-400 max-w-xl leading-relaxed"
             >
-              I help Web3, Fintech, and Greentech founders turn technical
+              I help AI, Fintech, and Greentech founders turn technical
               innovation into market traction — through positioning, narrative
               strategy, and the GTM-6 framework.
             </p>

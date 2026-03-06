@@ -180,7 +180,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             <div>
               <p className="font-semibold text-sylva-50">Sylvia Ndunge</p>
               <p className="text-sm text-muted-foreground">
-                Go-to-Market Architect for Web3, Fintech, and Greentech
+                Go-to-Market Architect for AI, Fintech, and Greentech
                 pioneers.
               </p>
             </div>

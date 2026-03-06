@@ -77,7 +77,7 @@ export function Footer() {
               </span>
             </div>
             <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
-              Go-to-Market Architect for Web3, Fintech, and Greentech pioneers.
+              Go-to-Market Architect for AI, Fintech, and Greentech pioneers.
               Turning innovation into market traction.
             </p>
             <div className="mt-4 flex items-center gap-3">

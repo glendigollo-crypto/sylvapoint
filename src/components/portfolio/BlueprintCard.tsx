@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Download } from "lucide-react";
 
 interface BlueprintCardProps {
   title: string;
@@ -12,6 +12,7 @@ interface BlueprintCardProps {
   solution: string;
   audience: string;
   deliverables: string[];
+  downloadUrl?: string;
 }
 
 export function BlueprintCard({
@@ -22,6 +23,7 @@ export function BlueprintCard({
   solution,
   audience,
   deliverables,
+  downloadUrl,
 }: BlueprintCardProps) {
   const [expanded, setExpanded] = useState(false);
 
@@ -97,6 +99,17 @@ export function BlueprintCard({
               ))}
             </ul>
           </div>
+
+          {downloadUrl && (
+            <a
+              href={downloadUrl}
+              download
+              className="inline-flex items-center gap-2 mt-2 rounded-lg bg-amber-500 px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-amber-400 btn-lift"
+            >
+              <Download size={16} />
+              Download Blueprint PDF
+            </a>
+          )}
         </div>
       </div>
     </div>

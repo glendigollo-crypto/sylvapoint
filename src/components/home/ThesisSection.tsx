@@ -23,7 +23,7 @@ const THESES = [
     number: "03",
     title: "Trust is the Currency",
     description:
-      "In Web3, fintech, and greentech, trust isn't a nice-to-have — it's the entire business model. Build trust first, and the market follows.",
+      "In AI, fintech, and greentech, trust isn't a nice-to-have — it's the entire business model. Build trust first, and the market follows.",
     image: "/images/generated/thesis-trust.png",
   },
 ];

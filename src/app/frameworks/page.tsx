@@ -19,7 +19,7 @@ const BLUEPRINTS = [
     solution:
       "A 90-day structured process that takes you from 'we built this cool thing' to 'here's why the market needs us now.' Covers positioning, narrative architecture, ICP definition, channel strategy, and launch sequencing. Built on April Dunford's positioning framework, Eugene Schwartz's awareness levels, and Alex Hormozi's value equation.",
     audience:
-      "Post-MVP, pre-scale founders in Web3, Fintech, or Greentech who have product traction but no repeatable GTM motion.",
+      "Post-MVP, pre-scale founders in AI, Fintech, or Greentech who have product traction but no repeatable GTM motion.",
     deliverables: [
       "Competitive positioning map and category design",
       "Core narrative framework (elevator to boardroom)",
@@ -28,6 +28,7 @@ const BLUEPRINTS = [
       "GTM launch sequence playbook",
       "Objection handling and sales enablement deck",
     ],
+    downloadUrl: "/downloads/gtm-clarity-blueprint.pdf",
   },
   {
     title: "The Funding Moment Visibility Blueprint",
@@ -53,11 +54,11 @@ const BLUEPRINTS = [
     subtitle: "Framework 03",
     image: "/images/generated/framework-community.png",
     problem:
-      "In Web3, fintech, and greentech, trust isn't optional — it's the product. You need community before you need customers, but you don't know how to build it without it feeling fake.",
+      "In AI, fintech, and greentech, trust isn't optional — it's the product. You need community before you need customers, but you don't know how to build it without it feeling fake.",
     solution:
       "A trust-first community strategy that builds genuine market relationships before you need to sell. Developer relations, community governance, content-driven trust signals, and the infrastructure that turns community members into customers and advocates.",
     audience:
-      "Early-stage founders building in trust-dependent markets (Web3, fintech, greentech, healthtech) who need community before revenue.",
+      "Early-stage founders building in trust-dependent markets (AI, fintech, greentech, healthtech) who need community before revenue.",
     deliverables: [
       "Community strategy and governance framework",
       "Developer relations playbook (if applicable)",
@@ -83,7 +84,7 @@ export default function FrameworksPage() {
           </h1>
           <p className="mt-6 text-lg text-sylva-400 max-w-2xl mx-auto">
             Battle-tested GTM frameworks built from working with dozens of
-            startups across Web3, Fintech, and Greentech. Each blueprint is a
+            startups across AI, Fintech, and Greentech. Each blueprint is a
             complete system, not a checklist.
           </p>
         </div>

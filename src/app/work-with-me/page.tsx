@@ -7,7 +7,7 @@ import { FitQualifier } from "@/components/portfolio/FitQualifier";
 export const metadata: Metadata = {
   title: "Work With Me",
   description:
-    "Fractional Go-to-Market Architect for Web3, Fintech, and Greentech startups. GTM clarity, growth engine builds, and funding capitalization.",
+    "Fractional Go-to-Market Architect for AI, Fintech, and Greentech startups. GTM clarity, growth engine builds, and funding capitalization.",
 };
 
 const SERVICES = [
@@ -63,7 +63,7 @@ const TESTIMONIALS = [
     quote:
       "Sylvia didn't just give us a marketing plan — she gave us a narrative. Our conversion rate doubled within the first month.",
     name: "Founder",
-    company: "Web3 Startup",
+    company: "AI Startup",
   },
   {
     quote:
@@ -94,7 +94,7 @@ export default function WorkWithMePage() {
             for <span className="text-amber-500">Pioneers</span>
           </h1>
           <p className="mt-6 text-lg text-sylva-400 max-w-2xl mx-auto">
-            Web3, Fintech, and Greentech startups hire me to turn technical
+            AI, Fintech, and Greentech startups hire me to turn technical
             innovation into market traction. I build positioning, narrative, and
             growth systems — not campaigns.
           </p>

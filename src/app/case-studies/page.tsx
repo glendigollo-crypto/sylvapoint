@@ -4,13 +4,13 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Case Studies",
   description:
-    "Real results from working with Web3, Fintech, and Greentech founders. GTM transformations and growth stories.",
+    "Real results from working with AI, Fintech, and Greentech founders. GTM transformations and growth stories.",
 };
 
 const CASE_STUDIES = [
   {
     company: "Hurupay",
-    industry: "Web3 / Fintech",
+    industry: "AI / Fintech",
     headline: "From technical whitepaper to market-ready positioning",
     result: "3x increase in qualified inbound leads within 60 days",
     challenge:
@@ -40,11 +40,11 @@ const CASE_STUDIES = [
   },
   {
     company: "Sankore 2.0",
-    industry: "Web3 / Education",
+    industry: "AI / Education",
     headline: "Building community trust in a skeptical market",
     result: "Grew engaged community from 200 to 2,000+ in 90 days",
     challenge:
-      "Sankore 2.0 was building a blockchain-based education credentials platform for African universities, but Web3 skepticism in the education sector was the biggest barrier to adoption.",
+      "Sankore 2.0 was building a blockchain-based education credentials platform for African universities, but AI skepticism in the education sector was the biggest barrier to adoption.",
     approach:
       "Designed a trust-first GTM strategy that led with the education mission, not the blockchain technology. Built partnerships with university innovation labs. Created content that demonstrated value through pilot results, not token mechanics.",
     metrics: [

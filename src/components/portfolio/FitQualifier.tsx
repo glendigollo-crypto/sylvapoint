@@ -7,7 +7,7 @@ import { Check, X } from "lucide-react";
 const GOOD_FIT = [
   "You've built something real but the market doesn't get it yet",
   "You need positioning and narrative, not just marketing",
-  "You're in Web3, Fintech, or Greentech",
+  "You're in AI, Fintech, or Greentech",
   "You want a strategic partner, not an agency",
   "You're post-MVP and pre-scale (or just raised)",
 ];

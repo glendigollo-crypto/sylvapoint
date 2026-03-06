@@ -5,7 +5,7 @@ import Image from "next/image";
 export const metadata: Metadata = {
   title: "About Sylvia Ndunge",
   description:
-    "Go-to-Market Architect for Web3, Fintech, and Greentech startups. Building positioning, narrative, and growth systems for technical founders.",
+    "Go-to-Market Architect for AI, Fintech, and Greentech startups. Building positioning, narrative, and growth systems for technical founders.",
 };
 
 const BELIEFS = [
@@ -25,7 +25,7 @@ const BELIEFS = [
     number: "03",
     title: "Africa's tech ecosystem will lead the next wave",
     description:
-      "The innovations coming out of African fintech, Web3, and greentech will reshape global markets. I'm here to make sure the world hears about them.",
+      "The innovations coming out of African fintech, AI, and greentech will reshape global markets. I'm here to make sure the world hears about them.",
   },
   {
     number: "04",
@@ -92,7 +92,7 @@ export default function AboutPage() {
             </h1>
             <p className="mt-4 text-lg text-sylva-400 leading-relaxed">
               Go-to-Market Architect for the founders building what&apos;s next
-              in Web3, Fintech, and Greentech.
+              in AI, Fintech, and Greentech.
             </p>
           </div>
         </div>

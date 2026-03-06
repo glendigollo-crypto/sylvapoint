@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     template: "%s | Sylvia Ndunge",
   },
   description:
-    "Go-to-Market Architect for Web3, Fintech, and Greentech pioneers. Free AI-powered GTM audit, strategic frameworks, and fractional growth leadership.",
+    "Go-to-Market Architect for AI, Fintech, and Greentech pioneers. Free AI-powered GTM audit, strategic frameworks, and fractional growth leadership.",
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
   ),
@@ -32,13 +32,13 @@ export const metadata: Metadata = {
     siteName: "Sylvia Ndunge",
     title: "Sylvia Ndunge | Go-to-Market Architect",
     description:
-      "Go-to-Market Architect for Web3, Fintech, and Greentech pioneers. Free AI-powered GTM audit, strategic frameworks, and fractional growth leadership.",
+      "Go-to-Market Architect for AI, Fintech, and Greentech pioneers. Free AI-powered GTM audit, strategic frameworks, and fractional growth leadership.",
   },
   twitter: {
     card: "summary_large_image",
     title: "Sylvia Ndunge | Go-to-Market Architect",
     description:
-      "Go-to-Market Architect for Web3, Fintech, and Greentech pioneers.",
+      "Go-to-Market Architect for AI, Fintech, and Greentech pioneers.",
   },
   icons: {
     icon: "/images/generated/sn-logo-hex.png",
@@ -58,7 +58,7 @@ const jsonLd = {
       name: "Sylvia Ndunge",
       jobTitle: "Go-to-Market Architect",
       description:
-        "Fractional GTM leader for Web3, Fintech, and Greentech startups. Specializing in positioning, narrative strategy, and market entry.",
+        "Fractional GTM leader for AI, Fintech, and Greentech startups. Specializing in positioning, narrative strategy, and market entry.",
       url: process.env.NEXT_PUBLIC_SITE_URL || "https://www.sylvapoint.com",
       sameAs: [
         "https://www.linkedin.com/in/sylviandunge/",
