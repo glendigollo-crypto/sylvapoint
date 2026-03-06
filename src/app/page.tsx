@@ -122,7 +122,7 @@ export default function Home() {
           <div className="hidden lg:block absolute right-8 top-1/2 -translate-y-1/2 xl:right-16">
             <div className="w-64 h-64 xl:w-80 xl:h-80 rounded-full overflow-hidden border-2 border-amber-500/20 shadow-lg float-gentle">
               <Image
-                src="/images/generated/headshot-placeholder.png"
+                src="/images/generated/hero-portrait.png"
                 alt="Sylvia Ndunge"
                 width={320}
                 height={320}
